@@ -5,6 +5,8 @@ import { MainPanel } from 'views/layouts/MainPanel';
 import { ErrorPage } from 'views/pages/ErrorPage';
 import { Home } from 'views/pages/Home';
 import { SelectCoin } from 'views/pages/SelectCoin';
+import { SecondHome } from 'views/pages/SecondHome';
+import { SelectMoney } from 'views/pages/SelectMoney';
 
 const AppRouter = createBrowserRouter([
   {
@@ -25,8 +27,16 @@ const AppRouter = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: '/second-home',
+        element: <SecondHome />,
+      },
+      {
         path: '/select-coin',
         element: <SelectCoin />,
+      },
+      {
+        path: '/select-money',
+        element: <SelectMoney />,
       },
     ],
     errorElement: <ErrorPage />,

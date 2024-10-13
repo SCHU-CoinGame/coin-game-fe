@@ -4,9 +4,10 @@ import { convertToUpbitFormat } from './CoinConverter';
 
 interface BtcKRWProps {
   coin: string;
+  toolbarAllowed?: boolean;
 }
 
-function BtcKRW(props: BtcKRWProps) {
+function BtcWidget(props: BtcKRWProps) {
   const container = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (container.current) {
@@ -22,7 +23,7 @@ function BtcKRW(props: BtcKRWProps) {
           "timezone": "Asia/Seoul",
           "theme": "light",
           "hide_legend": true,
-          "hide_top_toolbar": true,
+          "hide_top_toolbar": ${props.toolbarAllowed ? false : true},
           "style": "1",
           "locale": "kr",
           "allow_symbol_change": false,
@@ -44,4 +45,4 @@ function BtcKRW(props: BtcKRWProps) {
   );
 }
 
-export { BtcKRW };
+export { BtcWidget };

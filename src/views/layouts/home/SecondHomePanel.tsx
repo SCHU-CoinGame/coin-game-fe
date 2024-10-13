@@ -29,19 +29,6 @@ const btnContainerCss = css`
   gap: 10px;
 `;
 
-const prevBtnCss = css`
-  width: 80px;
-  height: 40px;
-  font-size: 20px;
-  color: white;
-  background-color: ${colorLight.subBtnColor};
-  font-family: 'GmarketSans-Bold';
-  outline: none;
-  &:focus {
-    outline: none;
-  }
-`;
-
 const nextBtnCss = css`
   width: 120px;
   height: 40px;
@@ -55,53 +42,37 @@ const nextBtnCss = css`
   }
 `;
 
-function HomePanel() {
+function SecondHomePanel() {
   const navigate = useNavigate();
 
-  const [tutorialIdx, setTutorialIdx] = useState(0);
   const tutorial = [
-    '코인 예측왕 게임은 실시간 비트코인 가격을 바탕으로 모의투자를 즐길 수 있는 게임입니다',
-    '자신이 선택한 종목의 10초 뒤 가격 변동을 예측하여 투자하고, <br />10초 후의 가격 변동에 따라 점수를 얻게 됩니다',
-    '9개의 비트코인 종목 중에서, 가장 유망해 보이는 3개의 그래프를 골라주세요<br />제한 시간은 30초 입니다',
+    '고른 3개의 종목에 투자하세요!<br />종목 하나당 각각 10억, 5억, 1억을 투자할 수 있으며, 제한시간은 30초 입니다',
   ];
 
   const handleStartGame = () => {
-    navigate('/select-coin');
+    navigate('/select-money');
   };
 
   return (
     <div css={containerCss}>
       <AnimatePresence mode="wait">
         <motion.div
-          key={tutorialIdx}
+          key={0}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
           css={tutorialTextCss}
-          dangerouslySetInnerHTML={{ __html: tutorial[tutorialIdx] }}
+          dangerouslySetInnerHTML={{ __html: tutorial[0] }}
         />
       </AnimatePresence>
       <div css={btnContainerCss}>
-        {tutorialIdx === 0 ? (
-          ''
-        ) : (
-          <Button css={prevBtnCss} onClick={() => setTutorialIdx(tutorialIdx - 1)}>
-            이전
-          </Button>
-        )}
-        {tutorialIdx === 2 ? (
-          <Button css={nextBtnCss} onClick={handleStartGame}>
-            준비 완료!
-          </Button>
-        ) : (
-          <Button css={nextBtnCss} onClick={() => setTutorialIdx(tutorialIdx + 1)}>
-            다음
-          </Button>
-        )}
+        <Button css={nextBtnCss} onClick={handleStartGame}>
+          준비 완료!
+        </Button>
       </div>
     </div>
   );
 }
 
-export { HomePanel };
+export { SecondHomePanel };

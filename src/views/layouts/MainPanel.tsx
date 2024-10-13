@@ -1,6 +1,8 @@
 import { css } from '@emotion/react';
 import { HomeOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
+import { requestSignout } from 'api/requests/requestAuth';
 
 const containerCss = css`
   display: flex;
@@ -26,8 +28,29 @@ const contentCss = css`
 
 function MainPanel() {
   const navigate = useNavigate();
+  const changeUserInfo = useUserInfoStore((state) => state.changeUserInfo);
+  const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
+  const changeBalance = useCoinInfoStore((state) => state.changeBalance);
 
   const handleHomeClick = () => {
+    // 사용자 정보 초기화
+    changeUserInfo({
+      name: '',
+      department: '',
+      student_id: '',
+      nickname: '',
+    });
+
+    // 코인 정보 초기화
+    changeCoinInfo({
+      coin_1: '',
+      coin_2: '',
+      coin_3: '',
+    });
+
+    // 잔액 초기화
+    changeBalance(0);
+    requestSignout();
     navigate('/signin');
   };
 

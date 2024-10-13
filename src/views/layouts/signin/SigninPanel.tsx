@@ -3,6 +3,7 @@ import { Button, Form, Input } from 'antd';
 import { requestSignin } from 'api/requests/requestAuth';
 import { useNavigate } from 'react-router-dom';
 import { colorLight } from 'styles/colors';
+import { useUserInfoStore } from 'stores/userInfoStore';
 
 const containerCss = css`
   width: 100%;
@@ -55,8 +56,8 @@ const rankBtnCss = css`
 type FieldType = {
   name: string;
   department: string;
-  studentId: number;
-  nickName: string;
+  student_id: number;
+  nickname: string;
 };
 
 function SigninPanel() {
@@ -69,6 +70,7 @@ function SigninPanel() {
 
   const onFinish = (values: any) => {
     console.log(values);
+    useUserInfoStore.getState().changeUserInfo(values);
     requestSignin();
     navigate('/');
   };
@@ -90,12 +92,12 @@ function SigninPanel() {
           <Input css={inputCss} placeholder="학과" />
         </Form.Item>
         <Form.Item<FieldType>
-          name="studentId"
+          name="student_id"
           rules={[{ required: true, message: '학번을 입력해주세요.' }]}
         >
           <Input css={inputCss} placeholder="학번" />
         </Form.Item>
-        <Form.Item<FieldType> name="nickName">
+        <Form.Item<FieldType> name="nickname">
           <Input css={inputCss} placeholder="별명" />
         </Form.Item>
         <div>별명 미작성 시, 랭킹에 이름으로 등록됩니다</div>
