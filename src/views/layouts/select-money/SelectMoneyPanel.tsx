@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { colorLight } from 'styles/colors';
 import { useCoinInfoStore } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
+import { getUpbitData } from 'api/requests/requestCoin';
+import { useMutation } from '@tanstack/react-query';
 
 const titleTextCss = css`
   align-content: center;
@@ -146,6 +148,16 @@ const radioButtonCss = (isSelected: boolean, isDisabled: boolean) => css`
 `;
 
 function SelectMoneyPanel() {
+  const upbitData = useMutation({
+    mutationFn: getUpbitData,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+    onError: () => {
+      console.log('error');
+    },
+    onMutate: () => {},
+  });
   const { coinInfo } = useCoinInfoStore((state) => ({
     coinInfo: state.coinInfo,
   }));
@@ -200,13 +212,24 @@ function SelectMoneyPanel() {
 
   const handleNextClick = () => {
     if (isAllSelected) {
+      getCoinInfo();
       console.log('다음 단계로 진행');
     }
   };
 
+  const getCoinInfo = () => {
+    const intervalId = setInterval(() => {
+      upbitData.mutate();
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 10000);
+  };
+
   return (
     <div css={containerCss}>
-      {countdown > 0 && <Overlay countdown={countdown} />}
+      {countdown > 0 && <Overlay countdown={countdown} height={80} />}
       <div css={titleTextCss}>
         선택한 3개의 종목에 투자하세요! <br />
         종목 하나당 각각 10억, 5억, 1억을 투자할 수 있습니다.

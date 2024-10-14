@@ -6,6 +6,7 @@ import { colorLight } from 'styles/colors';
 import { useCoinInfoStore } from 'stores/userInfoStore';
 import { useNavigate } from 'react-router-dom';
 import { Overlay } from 'views/layouts/Overlay';
+import { useCoinListStore } from 'stores/userInfoStore';
 
 const containerCss = css`
   width: 100%;
@@ -228,17 +229,8 @@ const modalOkBtnCss = css`
 function SelectCoinPanel() {
   const navigate = useNavigate();
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
-  const coins = [
-    { value: 'BTC/KRW', label: '비트코인' },
-    { value: 'SXP/KRW', label: '솔라' },
-    { value: 'SUI/KRW', label: '수이' },
-    { value: 'ARK/KRW', label: '아크' },
-    { value: 'SHIB/KRW', label: '시바이누' },
-    { value: 'SEI/KRW', label: '세이' },
-    { value: 'HIFI/KRW', label: '하이파이' },
-    { value: 'XRP/KRW', label: '리플' },
-    { value: 'UXLINK/KRW', label: '유엑스링크' },
-  ];
+  const coins = useCoinListStore((state) => state.coinList);
+
   // 시작 카운트다운
   const [countdown, setCountdown] = useState(5);
   const [timeLeft, setTimeLeft] = useState(35);
@@ -319,7 +311,7 @@ function SelectCoinPanel() {
   return (
     <>
       <div css={containerCss}>
-        {countdown > 0 && <Overlay countdown={countdown} />}
+        {countdown > 0 && <Overlay countdown={countdown} height={40} />}
         <div css={titleTextCss}>
           9개의 비트코인 종목 중에서, 가장 유망해 보이는 3개의 그래프를 골라주세요.
         </div>

@@ -1,3 +1,5 @@
 const BASE_URL = 'http://localhost';
 
-export { BASE_URL };
+const COIN_API = '/upbit_data';
+
+export { BASE_URL, COIN_API };

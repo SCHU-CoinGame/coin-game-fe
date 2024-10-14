@@ -76,4 +76,36 @@ const useCoinInfoStore = create(
     },
   ),
 );
-export { useUserInfoStore, useCoinInfoStore };
+
+interface CoinListState {
+  coinList: { value: string; label: string }[]; // 배열 타입으로 변경
+  changeCoinList: (
+    value: { value: string; label: string }[], // 배열 타입으로 변경
+  ) => void;
+}
+
+const useCoinListStore = create(
+  persist<CoinListState>(
+    (set) => ({
+      coinList: [
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+        { value: '', label: '' },
+      ],
+      changeCoinList: (
+        value: { value: string; label: string }[], // 배열 타입으로 변경
+      ) => set({ coinList: value }),
+    }),
+    {
+      name: 'coinList',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+export { useUserInfoStore, useCoinInfoStore, useCoinListStore };

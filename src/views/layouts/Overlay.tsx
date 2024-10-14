@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 import { Progress } from 'antd';
 import { colorLight } from 'styles/colors';
 
-const overlayCSS = css`
+const overlayCSS = (height: number) => css`
   position: fixed;
-  top: 10%;
+  top: ${height + 20}px;
   left: 0;
   width: 100%;
-  height: 90%;
+  height: calc(100% - ${height}px);
   background-color: rgba(255, 255, 255, 1);
   display: flex;
   justify-content: center;
@@ -20,6 +20,7 @@ const overlayCSS = css`
 
 interface OverlayProps {
   countdown: number;
+  height: number;
 }
 
 function Overlay(props: OverlayProps) {
@@ -40,7 +41,7 @@ function Overlay(props: OverlayProps) {
   }, []);
 
   return (
-    <div css={overlayCSS}>
+    <div css={overlayCSS(props.height)}>
       <Progress
         type="circle"
         percent={percent}

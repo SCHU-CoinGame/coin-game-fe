@@ -4,6 +4,10 @@ import { requestSignin } from 'api/requests/requestAuth';
 import { useNavigate } from 'react-router-dom';
 import { colorLight } from 'styles/colors';
 import { useUserInfoStore } from 'stores/userInfoStore';
+import { useMutation } from '@tanstack/react-query';
+import { getUpbitData } from 'api/requests/requestCoin';
+import { transformCoinData } from 'views/CoinConverter';
+import { useCoinListStore } from 'stores/userInfoStore';
 
 const containerCss = css`
   width: 100%;
@@ -61,6 +65,17 @@ type FieldType = {
 };
 
 function SigninPanel() {
+  const upbitData = useMutation({
+    mutationFn: getUpbitData,
+    onSuccess: (data) => {
+      const coinList = transformCoinData(data);
+      useCoinListStore.getState().changeCoinList(coinList);
+    },
+    onError: () => {
+      console.log('error');
+    },
+    onMutate: () => {},
+  });
   const navigate = useNavigate();
 
   const handleSignin = () => {
@@ -69,6 +84,7 @@ function SigninPanel() {
   };
 
   const onFinish = (values: any) => {
+    upbitData.mutate();
     console.log(values);
     useUserInfoStore.getState().changeUserInfo(values);
     requestSignin();
