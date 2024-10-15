@@ -213,7 +213,7 @@ function SelectMoneyPanel() {
   const handleNextClick = () => {
     if (isAllSelected) {
       getCoinInfo();
-      console.log('다음 단계로 진행');
+      console.log('코인 데이터: ');
     }
   };
 
