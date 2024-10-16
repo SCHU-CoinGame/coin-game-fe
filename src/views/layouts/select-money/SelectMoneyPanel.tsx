@@ -147,10 +147,29 @@ const radioButtonCss = (isSelected: boolean, isDisabled: boolean) => css`
   }
 `;
 
+const coinDataListCss = css`
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+`;
+
+const coinDataCss = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 200px;
+`;
+
 function SelectMoneyPanel() {
+  const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
+  const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([]);
+
   const upbitData = useMutation({
     mutationFn: getUpbitData,
     onSuccess: (data) => {
+      setCoinDataList((prevData) => [...prevData, ...data]); // 데이터 리스트에 추가
       console.log(data);
     },
     onError: () => {
@@ -212,6 +231,11 @@ function SelectMoneyPanel() {
 
   const handleNextClick = () => {
     if (isAllSelected) {
+      setFinalCoinInfo([
+        { value: coinInfo.coin_1, money: selectedAmounts[0] },
+        { value: coinInfo.coin_2, money: selectedAmounts[1] },
+        { value: coinInfo.coin_3, money: selectedAmounts[2] },
+      ]);
       getCoinInfo();
       console.log('코인 데이터: ');
     }
@@ -277,6 +301,18 @@ function SelectMoneyPanel() {
                 </Radio.Button>
               ))}
             </Radio.Group>
+          ))}
+        </div>
+        <div css={coinDataListCss}>
+          {coinDataList.map((coin, index) => (
+            <div css={coinDataCss} key={index}>
+              <hr />
+              <p>코드: {coin.code}</p>
+              <p>가격: {coin.trade_price}</p>
+              <p>변동률: {coin.change_rate}</p>
+              <p>타임스탬프: {coin.timestamp}</p>
+              <p>트레이드 타임: {coin.trade_timestamp}</p>
+            </div>
           ))}
         </div>
       </div>
