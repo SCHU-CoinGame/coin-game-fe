@@ -7,7 +7,7 @@ import { useCoinInfoStore } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { useMutation } from '@tanstack/react-query';
-
+import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
 const titleTextCss = css`
   align-content: center;
   width: 100%;
@@ -165,11 +165,13 @@ const coinDataCss = css`
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([]);
+  const [previousTimestamps, setPreviousTimestamps] = useState<any>({});
 
   const upbitData = useMutation({
     mutationFn: getUpbitData,
     onSuccess: (data) => {
       setCoinDataList((prevData) => [...prevData, ...data]); // 데이터 리스트에 추가
+      processData(data);
       console.log(data);
     },
     onError: () => {
@@ -231,26 +233,83 @@ function SelectMoneyPanel() {
 
   const handleNextClick = () => {
     if (isAllSelected) {
+      setPreviousTimestamps({});
+      console.log('온클릭', previousTimestamps);
       setFinalCoinInfo([
-        { value: coinInfo.coin_1, money: selectedAmounts[0] },
-        { value: coinInfo.coin_2, money: selectedAmounts[1] },
-        { value: coinInfo.coin_3, money: selectedAmounts[2] },
+        {
+          value: ConvertSlashToDash(coinInfo.coin_1.value),
+          money: transformMoneyData(selectedAmounts[0]),
+        },
+        {
+          value: ConvertSlashToDash(coinInfo.coin_2.value),
+          money: transformMoneyData(selectedAmounts[1]),
+        },
+        {
+          value: ConvertSlashToDash(coinInfo.coin_3.value),
+          money: transformMoneyData(selectedAmounts[2]),
+        },
       ]);
       getCoinInfo();
       console.log('코인 데이터: ');
     }
   };
 
-  const getCoinInfo = () => {
-    const intervalId = setInterval(() => {
-      upbitData.mutate();
-    }, 1000);
+  const getCoinInfo = async () => {
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    setTimeout(() => {
-      clearInterval(intervalId);
-    }, 10000);
+    for (let i = 0; i < 10; i++) {
+      await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
+
+      await delay(1000); // 1초 기다림
+    }
   };
 
+  async function processData(newData: any[]) {
+    console.log('함수 맨 처음에 타임스탬프 가져오기', previousTimestamps);
+
+    const updatedCoinInfo = finalCoinInfo.map((coin: any) => {
+      // 서버 데이터 중에서 code가 일치하는 항목을 찾음
+      const matchingData = newData.find((data) => data.code === coin.value);
+      console.log('일치하는 데이터만', matchingData);
+
+      if (matchingData) {
+        // 이전에 받은 timestamp와 비교하여 변경 여부 확인
+        const prevTimestamp = previousTimestamps[matchingData.code];
+        console.log('이전 타임스탬프', prevTimestamp);
+        console.log('현재 타임스탬프', matchingData.trade_timestamp);
+
+        // 첫 번째 요청이거나 timestamp가 변경된 경우만 업데이트
+        if (!prevTimestamp || prevTimestamp !== matchingData.trade_timestamp) {
+          let newMoney;
+
+          // newData.change가 'RISE'면 증가, 'FALL'이면 감소
+          if (matchingData.change === 'RISE') {
+            newMoney = coin.money + coin.money * matchingData.change_rate;
+          } else if (matchingData.change === 'FALL') {
+            newMoney = coin.money - coin.money * matchingData.change_rate;
+          } else {
+            newMoney = coin.money; // 변화가 없다면 그대로 유지
+          }
+
+          // 해당 code의 현재 timestamp를 상태로 저장 (이전 상태와 병합)
+          setPreviousTimestamps((prevTimestamps: any) => ({
+            ...prevTimestamps,
+            [matchingData.code]: matchingData.trade_timestamp,
+          }));
+
+          return { ...coin, money: newMoney }; // 업데이트된 money 반환
+        }
+      }
+
+      // 일치하지 않거나 timestamp가 동일하면 기존 상태 유지
+      return coin;
+    });
+
+    console.log('값 변경!', updatedCoinInfo);
+
+    // 상태값 업데이트
+    setFinalCoinInfo(updatedCoinInfo);
+  }
   return (
     <div css={containerCss}>
       {countdown > 0 && <Overlay countdown={countdown} height={80} />}
