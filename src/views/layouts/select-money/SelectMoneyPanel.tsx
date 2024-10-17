@@ -74,6 +74,7 @@ const mainBodyCss = css`
 
 const chartContainerCss = css`
   display: grid;
+  z-index: 100;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 5px;
   height: 360px;
@@ -89,6 +90,7 @@ const radioContainerCss = (isGameStart: boolean) => css`
   position: relative;
   top: ${isGameStart ? '-200px' : '0'};
   opacity: ${isGameStart ? 0 : 1};
+  z-index: 0;
   transition:
     top 1s ease-in,
     opacity 0.3s ease;
@@ -110,9 +112,10 @@ const buttonContainerCss = (isGameStart: boolean) => css`
   position: relative;
   flex-direction: row;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-top: 80px;
   top: ${isGameStart ? '-800px' : '0'};
   opacity: ${isGameStart ? 0 : 1};
+  z-index: 0;
   transition:
     top 1s ease-in,
     opacity 0.3s ease;
@@ -124,9 +127,8 @@ const scoreContainerCss = (isGameStart: boolean) => css`
   width: 100%;
   flex-direction: column;
   align-items: center;
-  margin-top: 60px;
   position: relative;
-  top: ${isGameStart ? '-260px' : '-340px'};
+  top: ${isGameStart ? '0px' : '-100px'};
   opacity: ${isGameStart ? 1 : 0};
   transition:
     top 0.2s ease,
@@ -147,7 +149,7 @@ const balanceCss = (isGameStart: boolean, balance: number) => css`
   font-size: ${isGameStart ? '48px' : '36px'};
   color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
   font-family: 'SpoqaHanSansNeo-Bold';
-  top: ${isGameStart ? '100px' : '0'};
+  top: ${isGameStart ? '0px' : '-100px'};
   opacity: ${isGameStart ? 1 : 0};
   transition:
     top 0.2s ease,
@@ -569,8 +571,17 @@ function SelectMoneyPanel() {
               </Radio.Group>
             ))}
           </div>
-          <div css={balanceCss(isGameStart, balance)}>
-            잔고: {formatNumberWithComma(balance)} 원
+
+          <div css={scoreContainerCss(isGameStart)}>
+            <div css={scoreTextCss(finalCoinInfo[0].money, transformMoneyData(selectedAmounts[0]))}>
+              {formatNumberWithComma(finalCoinInfo[0].money)}
+            </div>
+            <div css={scoreTextCss(finalCoinInfo[1].money, transformMoneyData(selectedAmounts[1]))}>
+              {formatNumberWithComma(finalCoinInfo[1].money)}
+            </div>
+            <div css={scoreTextCss(finalCoinInfo[2].money, transformMoneyData(selectedAmounts[2]))}>
+              {formatNumberWithComma(finalCoinInfo[2].money)}
+            </div>
           </div>
 
           <div css={leverageRadioContainerCss(isGameStart)}>
@@ -589,28 +600,20 @@ function SelectMoneyPanel() {
               ))}
             </Radio.Group>
           </div>
-        </div>
-        <div css={scoreContainerCss(isGameStart)}>
-          <div css={scoreTextCss(finalCoinInfo[0].money, transformMoneyData(selectedAmounts[0]))}>
-            {formatNumberWithComma(finalCoinInfo[0].money)}
+          <div css={balanceCss(isGameStart, balance)}>
+            잔고: {formatNumberWithComma(balance)} 원
           </div>
-          <div css={scoreTextCss(finalCoinInfo[1].money, transformMoneyData(selectedAmounts[1]))}>
-            {formatNumberWithComma(finalCoinInfo[1].money)}
-          </div>
-          <div css={scoreTextCss(finalCoinInfo[2].money, transformMoneyData(selectedAmounts[2]))}>
-            {formatNumberWithComma(finalCoinInfo[2].money)}
-          </div>
-        </div>
 
-        <div css={buttonContainerCss(isGameStart)}>
-          <Button css={recommendCss}>AI 추천</Button>
-          <Button
-            css={nextBtnCss(isAllSelected)}
-            onClick={handleNextClick}
-            disabled={!isAllSelected}
-          >
-            게임 시작!
-          </Button>
+          <div css={buttonContainerCss(isGameStart)}>
+            <Button css={recommendCss}>AI 추천</Button>
+            <Button
+              css={nextBtnCss(isAllSelected)}
+              onClick={handleNextClick}
+              disabled={!isAllSelected}
+            >
+              게임 시작!
+            </Button>
+          </div>
         </div>
       </div>
 
