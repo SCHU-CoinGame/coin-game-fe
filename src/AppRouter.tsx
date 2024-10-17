@@ -7,11 +7,17 @@ import { Home } from 'views/pages/Home';
 import { SelectCoin } from 'views/pages/SelectCoin';
 import { SecondHome } from 'views/pages/SecondHome';
 import { SelectMoney } from 'views/pages/SelectMoney';
+import { RankPage } from 'views/pages/RankPage';
 
 const AppRouter = createBrowserRouter([
   {
     path: '/signin',
     element: <Signin />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/rank',
+    element: <RankPage />,
     errorElement: <ErrorPage />,
   },
   {

@@ -78,9 +78,8 @@ function SigninPanel() {
   });
   const navigate = useNavigate();
 
-  const handleSignin = () => {
-    requestSignin();
-    navigate('/');
+  const handleRank = () => {
+    navigate('/rank');
   };
 
   const onFinish = (values: any) => {
@@ -118,7 +117,7 @@ function SigninPanel() {
         </Form.Item>
         <div>별명 미작성 시, 랭킹에 이름으로 등록됩니다</div>
         <div css={btnContainerCss}>
-          <Button css={rankBtnCss} onClick={handleSignin}>
+          <Button css={rankBtnCss} onClick={handleRank}>
             랭킹 확인
           </Button>
           <Button type="primary" htmlType="submit" css={startBtnCss}>

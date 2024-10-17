@@ -1,7 +1,7 @@
 import { Overlay } from 'views/layouts/Overlay';
 import { css } from '@emotion/react';
 import { Button, Radio, Modal } from 'antd';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { colorLight } from 'styles/colors';
 import { useCoinInfoStore, useUserInfoStore } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
@@ -319,11 +319,19 @@ function SelectMoneyPanel() {
 
   const [countdown, setCountdown] = useState(5);
   const [timeLeft, setTimeLeft] = useState(35);
+  const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
 
   const handleTimeOver = () => {
     setSelectedAmounts(['10', '5', '1']);
     setIsTimeOverModalOpen(true);
+  };
+
+  const stopGameTimer = () => {
+    if (gameTimerRef.current) {
+      clearInterval(gameTimerRef.current);
+      gameTimerRef.current = null; // 타이머 ID 초기화
+    }
   };
 
   useEffect(() => {
@@ -335,10 +343,11 @@ function SelectMoneyPanel() {
       clearInterval(loadingTimer);
     }, 5000);
 
-    const gameTimer = setInterval(() => {
+    // gameTimer를 useRef로 저장
+    gameTimerRef.current = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
-          clearInterval(gameTimer);
+          stopGameTimer();
           handleTimeOver();
           return 0;
         }
@@ -348,7 +357,7 @@ function SelectMoneyPanel() {
 
     return () => {
       clearInterval(loadingTimer);
-      clearInterval(gameTimer);
+      stopGameTimer();
     };
   }, []);
 
@@ -376,6 +385,7 @@ function SelectMoneyPanel() {
 
   const handleNextClick = () => {
     setIsTimeOverModalOpen(false);
+    stopGameTimer();
     if (isAllSelected) {
       setPreviousTradePrices({});
       console.log('온클릭', previousTradePrices);
@@ -419,7 +429,7 @@ function SelectMoneyPanel() {
       coin_3: finalCoinInfo[2].value,
       balance: balance,
     });
-    navigate('/ranking');
+    navigate('/rank');
   };
 
   const handleGameEndClick = () => {
