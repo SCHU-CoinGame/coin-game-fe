@@ -289,7 +289,7 @@ function RankPanel() {
       name: '임시훈',
     },
   ];
-  const { data: userData } = useQuery({
+  const userData = useQuery({
     queryKey: ['userData'],
     queryFn: getUserData,
   });
@@ -298,16 +298,18 @@ function RankPanel() {
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
       <div css={titleCss}>순천향대 코인왕</div>
-      <div css={rankContainerCss}>
-        {sampleData.map((user, index) => (
-          <div css={rankItemCss} key={index}>
-            <div css={rankCss}>{index + 1}등</div>
-            <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
-            <div css={rankCss}>{user.name}</div>
-            <div css={rankCss}>{user.department}</div>
-          </div>
-        ))}
-      </div>
+      {userData.data && (
+        <div css={rankContainerCss}>
+          {userData.data.data.map((user, index) => (
+            <div css={rankItemCss} key={index}>
+              <div css={rankCss}>{index + 1}등</div>
+              <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
+              <div css={rankCss}>{user.name}</div>
+              <div css={rankCss}>{user.department}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
