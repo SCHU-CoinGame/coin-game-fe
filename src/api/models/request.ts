@@ -1,12 +1,10 @@
-export interface UpbitData {
-  change: string;
-  change_price: number;
-  change_rate: number;
-  code: string;
-  coin_name: string;
-  high_price: number;
-  low_price: number;
-  timestamp: number;
-  trade_price: number;
-  trade_timestamp: number;
+export interface SetUserDataRequest {
+  student_id: string;
+  name: string;
+  department: string;
+  nickname: string;
+  coin_1: string;
+  coin_2: string;
+  coin_3: string;
+  balance: number;
 }

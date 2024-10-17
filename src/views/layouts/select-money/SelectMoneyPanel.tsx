@@ -1,30 +1,75 @@
 import { Overlay } from 'views/layouts/Overlay';
 import { css } from '@emotion/react';
-import { Button, Radio } from 'antd';
+import { Button, Radio, Modal } from 'antd';
 import { useState, useEffect } from 'react';
 import { colorLight } from 'styles/colors';
-import { useCoinInfoStore } from 'stores/userInfoStore';
+import { useCoinInfoStore, useUserInfoStore } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { useMutation } from '@tanstack/react-query';
 import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
-const titleTextCss = css`
-  align-content: center;
-  width: 100%;
-  height: 40px;
-  font-size: 32px;
-  text-align: center;
-  font-family: 'SpoqaHanSansNeo-Bold';
-`;
+import { useNavigate } from 'react-router-dom';
+import { setUserData } from 'api/requests/requestCoin';
 
 const containerCss = css`
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 20px;
+`;
+
+const titleTextCss = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  width: 100%;
+  height: 130px;
+  font-size: 32px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+`;
+
+const progressBoxCss = (isGameStart: boolean) => css`
+  width: 100%;
+  height: 16px;
+  display: flex;
+  border-radius: 5px;
+  margin-top: 10px;
+  justify-content: flex-start;
+  background-color: #e2e2e2;
+  top: ${isGameStart ? '-200px' : '0'};
+  opacity: ${isGameStart ? 0 : 1};
+  transition:
+    top 1s ease-in,
+    opacity 0.3s ease;
+`;
+
+const progressCss = (countdown: number) => css`
+  width: ${countdown === 0 ? '0' : '100%'};
+  height: 16px;
+  border-radius: 5px 0 0 5px;
+  background-color: ${colorLight.mainBtnColor};
+  transition: width 30s linear;
+`;
+
+const titleContainerCss = css`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+`;
+
+const mainBodyCss = css`
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 780px;
+  margin-top: 50px;
 `;
 
 const chartContainerCss = css`
@@ -32,19 +77,21 @@ const chartContainerCss = css`
   grid-template-columns: 1fr 1fr 1fr;
   gap: 5px;
   height: 360px;
+  width: 100%;
 `;
 
-const radioContainerCss = css`
+const radioContainerCss = (isGameStart: boolean) => css`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
   gap: 10px;
-  margin-top: 30px;
-`;
-
-const titleContainerCss = css`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  margin-top: 15px;
+  position: relative;
+  top: ${isGameStart ? '-200px' : '0'};
+  opacity: ${isGameStart ? 0 : 1};
+  transition:
+    top 1s ease-in,
+    opacity 0.3s ease;
 `;
 
 const coinTitleCss = css`
@@ -58,34 +105,67 @@ const coinTitleCss = css`
   height: 30px;
 `;
 
-const progressBoxCss = css`
-  width: 100%;
-  height: 16px;
+const buttonContainerCss = (isGameStart: boolean) => css`
   display: flex;
-  border-radius: 5px;
-  justify-content: flex-start;
-  background-color: #e2e2e2;
-`;
-
-const progressCss = (countdown: number) => css`
-  width: ${countdown === 0 ? '0' : '100%'};
-  height: 16px;
-  border-radius: 5px 0 0 5px;
-  background-color: ${colorLight.mainBtnColor};
-  transition: width 30s linear;
-`;
-
-const buttonContainerCss = css`
-  display: flex;
+  position: relative;
   flex-direction: row;
   gap: 10px;
   margin-bottom: 20px;
+  top: ${isGameStart ? '-800px' : '0'};
+  opacity: ${isGameStart ? 0 : 1};
+  transition:
+    top 1s ease-in,
+    opacity 0.3s ease;
 `;
 
-const leverageRadioContainerCss = css`
-  margin-bottom: 20px;
+const scoreContainerCss = (isGameStart: boolean) => css`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 60px;
+  position: relative;
+  top: ${isGameStart ? '-260px' : '-340px'};
+  opacity: ${isGameStart ? 1 : 0};
+  transition:
+    top 0.2s ease,
+    opacity 0.5s ease;
+`;
+
+const scoreTextCss = (money: number, selectedAmount: number) => css`
+  text-align: center;
+  font-size: 40px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+  color: ${money >= selectedAmount ? '#C84A31' : '#0062DF'};
+`;
+
+const balanceCss = (isGameStart: boolean, balance: number) => css`
+  width: 100%;
+  position: relative;
+  text-align: center;
+  font-size: ${isGameStart ? '48px' : '36px'};
+  color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
+  font-family: 'SpoqaHanSansNeo-Bold';
+  top: ${isGameStart ? '100px' : '0'};
+  opacity: ${isGameStart ? 1 : 0};
+  transition:
+    top 0.2s ease,
+    opacity 0.5s ease;
+`;
+
+const leverageRadioContainerCss = (isGameStart: boolean) => css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   display: flex;
   justify-content: center;
+  position: relative;
+  top: ${isGameStart ? '-200px' : '0'};
+  opacity: ${isGameStart ? 0 : 1};
+  transition:
+    top 1s ease-in,
+    opacity 0.3s ease;
 `;
 
 const recommendCss = css`
@@ -153,27 +233,50 @@ const radioButtonCss = (isSelected: boolean, isDisabled: boolean) => css`
   }
 `;
 
-const coinDataListCss = css`
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  gap: 10px;
-  width: 100%;
+const leverageTextCss = css`
+  font-size: 26px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+  margin-bottom: 10px;
 `;
 
-const coinDataCss = css`
+const leverageRadioButtonCss = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  width: 110px;
+`;
+
+const modalContainerCss = css`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 200px;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+`;
+
+const modalTitleCss = css`
+  font-size: 36px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+  margin-bottom: 20px;
+`;
+
+const modalContentCss = (balance: number) => css`
+  font-size: 48px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+  margin-bottom: 20px;
+  color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
 `;
 
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
-  const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([]);
+  const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([0, 0, 0]);
   const [previousTradePrices, setPreviousTradePrices] = useState<any>({});
   const [selectedLeverage, setSelectedLeverage] = useState<number>(1);
-
+  const [isGameStart, setIsGameStart] = useState<boolean>(false);
+  const [calcTimer, setCalcTimer] = useState<number>(15);
+  const [balance, setBalance] = useState<number>(1600000000);
+  const navigate = useNavigate();
   const upbitData = useMutation({
     mutationFn: getUpbitData,
     onSuccess: (data) => {
@@ -189,6 +292,20 @@ function SelectMoneyPanel() {
   const { coinInfo } = useCoinInfoStore((state) => ({
     coinInfo: state.coinInfo,
   }));
+
+  const { userInfo } = useUserInfoStore((state) => ({
+    userInfo: state.userInfo,
+  }));
+
+  const userResultData = useMutation({
+    mutationFn: setUserData,
+    onSuccess: (data) => {
+      console.log('성공', data);
+    },
+    onError: () => {
+      console.log('error');
+    },
+  });
 
   const [countdown, setCountdown] = useState(5);
   const [timeLeft, setTimeLeft] = useState(35);
@@ -261,7 +378,7 @@ function SelectMoneyPanel() {
         },
       ]);
       getCoinInfo();
-      console.log('코인 데이터: ');
+      setIsGameStart(true);
     }
   };
 
@@ -270,9 +387,37 @@ function SelectMoneyPanel() {
 
     for (let i = 0; i < 15; i++) {
       await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
-
+      setCalcTimer((prevTimer) => prevTimer - 1);
       await delay(1000); // 1초 기다림
     }
+  };
+
+  const handleRankingClick = () => {
+    userResultData.mutate({
+      student_id: userInfo.student_id,
+      name: userInfo.name,
+      department: userInfo.department,
+      nickname: userInfo.nickname,
+      coin_1: finalCoinInfo[0].value,
+      coin_2: finalCoinInfo[1].value,
+      coin_3: finalCoinInfo[2].value,
+      balance: balance,
+    });
+    navigate('/ranking');
+  };
+
+  const handleGameEndClick = () => {
+    userResultData.mutate({
+      student_id: userInfo.student_id,
+      name: userInfo.name,
+      department: userInfo.department,
+      nickname: userInfo.nickname,
+      coin_1: finalCoinInfo[0].value,
+      coin_2: finalCoinInfo[1].value,
+      coin_3: finalCoinInfo[2].value,
+      balance: Math.round(balance),
+    });
+    navigate('/signin');
   };
 
   async function processData(newData: any[]) {
@@ -337,78 +482,134 @@ function SelectMoneyPanel() {
 
     // 상태값 업데이트
     setFinalCoinInfo(updatedCoinInfo);
+    setBalance(updatedCoinInfo[0].money + updatedCoinInfo[1].money + updatedCoinInfo[2].money);
   }
+
+  const formatNumberWithComma = (number: number): string => {
+    const roundedNumber = Math.floor(number); // 소수점 제거
+    return new Intl.NumberFormat('en-US').format(roundedNumber);
+  };
+
   return (
-    <div css={containerCss}>
-      {countdown > 0 && <Overlay countdown={countdown} height={80} />}
-      <div css={titleTextCss}>
-        선택한 3개의 종목에 투자하세요! <br />
-        종목 하나당 각각 10억, 5억, 1억을 투자할 수 있습니다.
-        <div css={progressBoxCss}>
-          <div css={progressCss(countdown)}></div>
+    <>
+      <div css={containerCss}>
+        {countdown > 0 && <Overlay countdown={countdown} height={80} />}
+        <div css={titleTextCss}>
+          {isGameStart ? '게임 시작!' : '선택한 3개의 종목에 투자하세요! '}
+          <br />
+          {isGameStart ? calcTimer : '종목 하나당 각각 10억, 5억, 1억을 투자할 수 있습니다.'}
+          <div css={progressBoxCss(isGameStart)}>
+            <div css={progressCss(countdown)}></div>
+          </div>
         </div>
-      </div>
+        <div css={mainBodyCss}>
+          <div css={titleContainerCss}>
+            <div css={coinTitleCss}>
+              {coinInfo.coin_1.label} {coinInfo.coin_1.value}
+            </div>
+            <div css={coinTitleCss}>
+              {coinInfo.coin_2.label} {coinInfo.coin_2.value}
+            </div>
+            <div css={coinTitleCss}>
+              {coinInfo.coin_3.label} {coinInfo.coin_3.value}
+            </div>
+          </div>
+          <div css={chartContainerCss}>
+            <BtcWidget coin={coinInfo.coin_1.value} toolbarAllowed={true} />
+            <BtcWidget coin={coinInfo.coin_2.value} toolbarAllowed={true} />
+            <BtcWidget coin={coinInfo.coin_3.value} toolbarAllowed={true} />
+          </div>
+          <div css={radioContainerCss(isGameStart)}>
+            {[0, 1, 2].map((index) => (
+              <Radio.Group
+                key={index}
+                onChange={handleAmountChange(index)}
+                value={selectedAmounts[index]}
+                css={radioGroupCss}
+                buttonStyle="solid"
+              >
+                {['10', '5', '1'].map((value) => (
+                  <Radio.Button
+                    key={value}
+                    value={value}
+                    css={radioButtonCss(
+                      selectedAmounts[index] === value,
+                      isValueSelected(value) && selectedAmounts[index] !== value,
+                    )}
+                  >
+                    {value}억
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+            ))}
+          </div>
+          <div css={balanceCss(isGameStart, balance)}>
+            잔고: {formatNumberWithComma(balance)} 원
+          </div>
 
-      <div css={leverageRadioContainerCss}>
-        <Radio.Group onChange={handleLeverageChange} value={selectedLeverage} buttonStyle="solid">
-          {[1, 10, 100, 1000].map((value) => (
-            <Radio.Button key={value} value={value}>
-              {value}배
-            </Radio.Button>
-          ))}
-        </Radio.Group>
-      </div>
+          <div css={leverageRadioContainerCss(isGameStart)}>
+            <div css={leverageTextCss}>레버리지를 설정하세요!</div>
 
-      <div style={{ width: '100%' }}>
-        <div css={titleContainerCss}>
-          <div css={coinTitleCss}>
-            {coinInfo.coin_1.label} {coinInfo.coin_1.value}
-          </div>
-          <div css={coinTitleCss}>
-            {coinInfo.coin_2.label} {coinInfo.coin_2.value}
-          </div>
-          <div css={coinTitleCss}>
-            {coinInfo.coin_3.label} {coinInfo.coin_3.value}
-          </div>
-        </div>
-        <div css={chartContainerCss}>
-          <BtcWidget coin={coinInfo.coin_1.value} toolbarAllowed={true} />
-          <BtcWidget coin={coinInfo.coin_2.value} toolbarAllowed={true} />
-          <BtcWidget coin={coinInfo.coin_3.value} toolbarAllowed={true} />
-        </div>
-        <div css={radioContainerCss}>
-          {[0, 1, 2].map((index) => (
             <Radio.Group
-              key={index}
-              onChange={handleAmountChange(index)}
-              value={selectedAmounts[index]}
-              css={radioGroupCss}
+              onChange={handleLeverageChange}
+              value={selectedLeverage}
               buttonStyle="solid"
+              css={radioGroupCss}
             >
-              {['10', '5', '1'].map((value) => (
-                <Radio.Button
-                  key={value}
-                  value={value}
-                  css={radioButtonCss(
-                    selectedAmounts[index] === value,
-                    isValueSelected(value) && selectedAmounts[index] !== value,
-                  )}
-                >
-                  {value}억
+              {[1, 10, 100, 1000].map((value) => (
+                <Radio.Button key={value} value={value} css={leverageRadioButtonCss}>
+                  {value}배
                 </Radio.Button>
               ))}
             </Radio.Group>
-          ))}
+          </div>
+        </div>
+        <div css={scoreContainerCss(isGameStart)}>
+          <div css={scoreTextCss(finalCoinInfo[0].money, transformMoneyData(selectedAmounts[0]))}>
+            {formatNumberWithComma(finalCoinInfo[0].money)}
+          </div>
+          <div css={scoreTextCss(finalCoinInfo[1].money, transformMoneyData(selectedAmounts[1]))}>
+            {formatNumberWithComma(finalCoinInfo[1].money)}
+          </div>
+          <div css={scoreTextCss(finalCoinInfo[2].money, transformMoneyData(selectedAmounts[2]))}>
+            {formatNumberWithComma(finalCoinInfo[2].money)}
+          </div>
+        </div>
+
+        <div css={buttonContainerCss(isGameStart)}>
+          <Button css={recommendCss}>AI 추천</Button>
+          <Button
+            css={nextBtnCss(isAllSelected)}
+            onClick={handleNextClick}
+            disabled={!isAllSelected}
+          >
+            게임 시작!
+          </Button>
         </div>
       </div>
 
-      <div css={buttonContainerCss}>
-        <Button css={recommendCss}>AI 추천</Button>
-        <Button css={nextBtnCss(isAllSelected)} onClick={handleNextClick} disabled={!isAllSelected}>
-          선택완료
-        </Button>
-      </div>
-    </div>
+      <Modal
+        open={calcTimer === 0}
+        footer={[
+          <Button key="back" onClick={handleRankingClick}>
+            랭킹 확인
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleGameEndClick}>
+            게임 종료
+          </Button>,
+        ]}
+        closable={false}
+        width={800}
+        centered
+      >
+        <div css={modalContainerCss}>
+          <div css={modalTitleCss}>게임 종료!</div>
+          <div css={modalContentCss(balance)}>
+            <div>총 잔고: {formatNumberWithComma(balance)} 원</div>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
 

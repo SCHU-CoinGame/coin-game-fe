@@ -7,13 +7,15 @@ import { useCoinInfoStore } from 'stores/userInfoStore';
 import { useNavigate } from 'react-router-dom';
 import { Overlay } from 'views/layouts/Overlay';
 import { useCoinListStore } from 'stores/userInfoStore';
+import { getDeeplearningData } from 'api/requests/requestCoin';
+import { useQuery } from '@tanstack/react-query';
 
 const containerCss = css`
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 20px;
 `;
@@ -227,6 +229,11 @@ const modalOkBtnCss = css`
 `;
 
 function SelectCoinPanel() {
+  const { data: deeplearningData } = useQuery({
+    queryKey: ['deeplearningData'],
+    queryFn: getDeeplearningData,
+  });
+
   const navigate = useNavigate();
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
   const coins = useCoinListStore((state) => state.coinList);

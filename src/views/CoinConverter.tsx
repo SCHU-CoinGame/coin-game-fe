@@ -15,7 +15,7 @@ function transformCoinData(data: Array<{ coin_name: string; code: string }>) {
   }));
 }
 
-function transformMoneyData(str: string) {
+function transformMoneyData(str: string): number {
   switch (str) {
     case '10':
       return 1000000000;
@@ -24,7 +24,7 @@ function transformMoneyData(str: string) {
     case '1':
       return 100000000;
     default:
-      return '0';
+      return 0;
   }
 }
 
