@@ -268,6 +268,15 @@ const modalContentCss = (balance: number) => css`
   color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
 `;
 
+const timeOverModalCss = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-top: 30px;
+`;
+
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([0, 0, 0]);
@@ -275,6 +284,7 @@ function SelectMoneyPanel() {
   const [selectedLeverage, setSelectedLeverage] = useState<number>(1);
   const [isGameStart, setIsGameStart] = useState<boolean>(false);
   const [calcTimer, setCalcTimer] = useState<number>(15);
+  const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const [balance, setBalance] = useState<number>(1600000000);
   const navigate = useNavigate();
   const upbitData = useMutation({
@@ -311,6 +321,11 @@ function SelectMoneyPanel() {
   const [timeLeft, setTimeLeft] = useState(35);
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
 
+  const handleTimeOver = () => {
+    setSelectedAmounts(['10', '5', '1']);
+    setIsTimeOverModalOpen(true);
+  };
+
   useEffect(() => {
     const loadingTimer = setInterval(() => {
       setCountdown((prevCount) => prevCount - 1);
@@ -324,7 +339,7 @@ function SelectMoneyPanel() {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(gameTimer);
-
+          handleTimeOver();
           return 0;
         }
         return prevTime - 1;
@@ -360,6 +375,7 @@ function SelectMoneyPanel() {
   const isAllSelected = selectedAmounts.every((amount) => amount !== '');
 
   const handleNextClick = () => {
+    setIsTimeOverModalOpen(false);
     if (isAllSelected) {
       setPreviousTradePrices({});
       console.log('온클릭', previousTradePrices);
@@ -607,6 +623,22 @@ function SelectMoneyPanel() {
           <div css={modalContentCss(balance)}>
             <div>총 잔고: {formatNumberWithComma(balance)} 원</div>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isTimeOverModalOpen}
+        footer={[
+          <Button key="submit" type="primary" onClick={handleNextClick}>
+            확인
+          </Button>,
+        ]}
+        closable={false}
+        width={600}
+        centered
+      >
+        <div css={timeOverModalCss}>
+          <div>타임 오버! 금액이 랜덤하게 선택됩니다.</div>
         </div>
       </Modal>
     </>
