@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import { useState, useEffect } from 'react';
-import { Progress, Button, Tag, Modal } from 'antd';
+import { Button, Tag, Modal } from 'antd';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { colorLight } from 'styles/colors';
 import { useCoinInfoStore } from 'stores/userInfoStore';
@@ -9,6 +9,8 @@ import { Overlay } from 'views/layouts/Overlay';
 import { useCoinListStore } from 'stores/userInfoStore';
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
+import { HintTag } from 'views/components/HintTag';
+import { ConvertSlashToDash } from 'views/CoinConverter';
 
 const containerCss = css`
   width: 100%;
@@ -320,7 +322,7 @@ function SelectCoinPanel() {
       <div css={containerCss}>
         {countdown > 0 && <Overlay countdown={countdown} height={40} />}
         <div css={titleTextCss}>
-          9개의 비트코인 종목 중에서, 가장 유망해 보이는 3개의 그래프를 골라주세요.
+          아홉 개의 비트코인 종목 중에서, 가장 유망해 보이는 세 개의 그래프를 골라주세요
         </div>
         <div css={progressBoxCss}>
           <div css={progressCss(countdown)}></div>
@@ -329,7 +331,12 @@ function SelectCoinPanel() {
           {coins.map((coin, index) => {
             const isSelected = selectedCoins.includes(index);
             const isDisabled = !isSelected && isMaxSelected;
-
+            if (deeplearningData) {
+              const btcData = deeplearningData.find(
+                (item) => item.code === ConvertSlashToDash(coin.value),
+              );
+              console.log(btcData);
+            }
             return (
               <div key={index} css={coinItemCss}>
                 <div css={coinTitleCss(isSelected)} onClick={() => toggleCoinSelection(index)}>
@@ -337,6 +344,8 @@ function SelectCoinPanel() {
                   <Button css={selectButtonCss(isSelected, isDisabled)} disabled={isDisabled}>
                     {isSelected ? '해제' : '선택'}
                   </Button>
+                  {coin.value === 'BTCUSDT' && <HintTag hint={'하락세'} />}
+                  {/* <HintTag hint={'하락세'} /> */}
                 </div>
                 <BtcWidget coin={coin.value} toolbarAllowed={false} />
               </div>
@@ -394,7 +403,7 @@ function SelectCoinPanel() {
 
       <Modal
         css={modalCss}
-        title="시간 초과! 랜덤한 3개의 종목으로 게임을 진행할게요"
+        title="시간 초과! 랜덤한 세 개의 종목으로 게임을 진행할게요"
         centered={true}
         open={isTimeOverModalOpen}
         onOk={handleOk}

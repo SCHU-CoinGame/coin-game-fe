@@ -523,7 +523,7 @@ function SelectMoneyPanel() {
       <div css={containerCss}>
         {countdown > 0 && <Overlay countdown={countdown} height={80} />}
         <div css={titleTextCss}>
-          {isGameStart ? '게임 시작!' : '선택한 3개의 종목에 투자하세요! '}
+          {isGameStart ? '게임 시작!' : '선택한 종목에 투자하세요!'}
           <br />
           {isGameStart ? calcTimer : '종목 하나당 각각 10억, 5억, 1억을 투자할 수 있습니다.'}
           <div css={progressBoxCss(isGameStart)}>

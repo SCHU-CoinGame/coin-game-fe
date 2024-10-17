@@ -17,7 +17,6 @@ const containerCss = css`
 
 const tutorialTextCss = css`
   align-content: center;
-  height: 100px;
   font-size: 32px;
   text-align: center;
   font-family: 'SpoqaHanSansNeo-Bold';
@@ -46,7 +45,7 @@ function SecondHomePanel() {
   const navigate = useNavigate();
 
   const tutorial = [
-    '고른 3개의 종목에 투자하세요!<br />종목 하나당 각각 10억, 5억, 1억을 투자할 수 있으며, 제한시간은 30초 입니다',
+    '선택한 종목에 투자하세요!<br />종목 하나당 각각 10억, 5억, 1억을 투자할 수 있으며, 레버리지 선택도 가능합니다.<br />제한시간은 30초입니다',
   ];
 
   const handleStartGame = () => {

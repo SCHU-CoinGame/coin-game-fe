@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getUserData } from 'api/requests/requestCoin';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
+import { HintTag } from 'views/components/HintTag';
 
 const homeIconCss = css`
   position: absolute;
