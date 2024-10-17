@@ -14,8 +14,8 @@ const containerCss = css`
 
 const homeIconCss = css`
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 15px;
+  left: 15px;
   font-size: 24px;
   z-index: 1000;
 `;
