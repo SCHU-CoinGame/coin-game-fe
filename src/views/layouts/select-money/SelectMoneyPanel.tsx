@@ -165,7 +165,7 @@ const coinDataCss = css`
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([]);
-  const [previousTimestamps, setPreviousTimestamps] = useState<any>({});
+  const [previousTradePrices, setPreviousTradePrices] = useState<any>({});
 
   const upbitData = useMutation({
     mutationFn: getUpbitData,
@@ -233,8 +233,8 @@ function SelectMoneyPanel() {
 
   const handleNextClick = () => {
     if (isAllSelected) {
-      setPreviousTimestamps({});
-      console.log('온클릭', previousTimestamps);
+      setPreviousTradePrices({});
+      console.log('온클릭', previousTradePrices);
       setFinalCoinInfo([
         {
           value: ConvertSlashToDash(coinInfo.coin_1.value),
@@ -263,45 +263,52 @@ function SelectMoneyPanel() {
       await delay(1000); // 1초 기다림
     }
   };
-
   async function processData(newData: any[]) {
-    console.log('함수 맨 처음에 타임스탬프 가져오기', previousTimestamps);
-
     const updatedCoinInfo = finalCoinInfo.map((coin: any) => {
       // 서버 데이터 중에서 code가 일치하는 항목을 찾음
       const matchingData = newData.find((data) => data.code === coin.value);
       console.log('일치하는 데이터만', matchingData);
 
       if (matchingData) {
-        // 이전에 받은 timestamp와 비교하여 변경 여부 확인
-        const prevTimestamp = previousTimestamps[matchingData.code];
-        console.log('이전 타임스탬프', prevTimestamp);
-        console.log('현재 타임스탬프', matchingData.trade_timestamp);
+        // 이전에 받은 trade_price와 비교하여 변경 여부 확인
+        const prevTradePrice = previousTradePrices[matchingData.code];
+        console.log('이전 거래 가격', prevTradePrice);
+        console.log('현재 거래 가격', matchingData.trade_price);
 
-        // 첫 번째 요청이거나 timestamp가 변경된 경우만 업데이트
-        if (!prevTimestamp || prevTimestamp !== matchingData.trade_timestamp) {
-          let newMoney;
+        // 첫 번째 요청은 계산하지 않음
+        if (prevTradePrice) {
+          // trade_price가 변경된 경우만 업데이트
+          if (prevTradePrice !== matchingData.trade_price) {
+            let newMoney;
 
-          // newData.change가 'RISE'면 증가, 'FALL'이면 감소
-          if (matchingData.change === 'RISE') {
-            newMoney = coin.money + coin.money * matchingData.change_rate;
-          } else if (matchingData.change === 'FALL') {
-            newMoney = coin.money - coin.money * matchingData.change_rate;
-          } else {
-            newMoney = coin.money; // 변화가 없다면 그대로 유지
+            // 코인 가격으로 coin.money만큼 구매한 후 가격 변동 계산
+            const coinAmount = coin.money / prevTradePrice;
+            if (matchingData.change === 'RISE') {
+              newMoney = coinAmount * matchingData.trade_price;
+            } else if (matchingData.change === 'FALL') {
+              newMoney = coinAmount * matchingData.trade_price;
+            } else {
+              newMoney = coin.money; // 변화가 없다면 그대로 유지
+            }
+
+            // 해당 code의 현재 trade_price를 상태로 저장 (이전 상태와 병합)
+            setPreviousTradePrices((prevTradePrices: any) => ({
+              ...prevTradePrices,
+              [matchingData.code]: matchingData.trade_price,
+            }));
+
+            return { ...coin, money: newMoney }; // 업데이트된 money 반환
           }
-
-          // 해당 code의 현재 timestamp를 상태로 저장 (이전 상태와 병합)
-          setPreviousTimestamps((prevTimestamps: any) => ({
-            ...prevTimestamps,
-            [matchingData.code]: matchingData.trade_timestamp,
+        } else {
+          // 첫 번째 요청일 경우 현재 trade_price를 상태에 저장만 함
+          setPreviousTradePrices((prevTradePrices: any) => ({
+            ...prevTradePrices,
+            [matchingData.code]: matchingData.trade_price,
           }));
-
-          return { ...coin, money: newMoney }; // 업데이트된 money 반환
         }
       }
 
-      // 일치하지 않거나 timestamp가 동일하면 기존 상태 유지
+      // 일치하지 않거나 trade_price가 동일하면 기존 상태 유지
       return coin;
     });
 
