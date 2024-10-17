@@ -297,14 +297,19 @@ function SelectMoneyPanel() {
             const coinAmount = coin.money / prevTradePrice;
             if (matchingData.change === 'RISE') {
               newMoney =
-                (coinAmount * matchingData.trade_price - coin.money) * selectedLeverage +
-                coin.money;
+                coin.money +
+                coinAmount * (matchingData.trade_price - prevTradePrice) * selectedLeverage;
             } else if (matchingData.change === 'FALL') {
               newMoney =
-                (coinAmount * matchingData.trade_price - coin.money) * selectedLeverage +
-                coin.money;
+                coin.money +
+                coinAmount * (matchingData.trade_price - prevTradePrice) * selectedLeverage;
             } else {
               newMoney = coin.money; // 변화가 없다면 그대로 유지
+            }
+
+            // 금액이 0 이하로 내려가지 않도록 제한
+            if (newMoney < 0) {
+              newMoney = 0;
             }
 
             // 해당 code의 현재 trade_price를 상태로 저장 (이전 상태와 병합)
@@ -343,6 +348,17 @@ function SelectMoneyPanel() {
           <div css={progressCss(countdown)}></div>
         </div>
       </div>
+
+      <div css={leverageRadioContainerCss}>
+        <Radio.Group onChange={handleLeverageChange} value={selectedLeverage} buttonStyle="solid">
+          {[1, 10, 100, 1000].map((value) => (
+            <Radio.Button key={value} value={value}>
+              {value}배
+            </Radio.Button>
+          ))}
+        </Radio.Group>
+      </div>
+
       <div style={{ width: '100%' }}>
         <div css={titleContainerCss}>
           <div css={coinTitleCss}>
@@ -385,15 +401,7 @@ function SelectMoneyPanel() {
           ))}
         </div>
       </div>
-      <div css={leverageRadioContainerCss}>
-        <Radio.Group onChange={handleLeverageChange} value={selectedLeverage} buttonStyle="solid">
-          {[1, 10, 100, 1000].map((value) => (
-            <Radio.Button key={value} value={value}>
-              {value}배
-            </Radio.Button>
-          ))}
-        </Radio.Group>
-      </div>
+
       <div css={buttonContainerCss}>
         <Button css={recommendCss}>AI 추천</Button>
         <Button css={nextBtnCss(isAllSelected)} onClick={handleNextClick} disabled={!isAllSelected}>
