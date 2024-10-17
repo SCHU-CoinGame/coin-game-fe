@@ -87,8 +87,11 @@ function HomePanel() {
       <div css={hintTextCss}>
         <HintTag hint={'거래량'} /> - 거래량이 가장 많은 종목
       </div>
+      <div css={hintTextCss}>
+        <HintTag hint={'AI픽'} /> - AI가 데이터 분석 후 추천한 종목
+      </div>
     </>,
-    '우선, 아홉 개의 비트코인 종목 중에서, 가장 유망해 보이는 세 개의 그래프를 골라주세요<br />제한 시간은 30초 입니다!',
+    '우선, 아홉 개의 비트코인 종목 중에서, 가장 유망해 보이는 세 개의 그래프를 골라주세요<br />제한 시간은 30초 입니다<br />선택이 어려우시다면 AI가 추천을 활용해보세요!',
   ];
 
   const handleStartGame = () => {

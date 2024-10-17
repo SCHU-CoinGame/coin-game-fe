@@ -1,4 +1,3 @@
-import { css } from '@emotion/react';
 import { Tag } from 'antd';
 import {
   FallOutlined,
@@ -6,6 +5,12 @@ import {
   ThunderboltOutlined,
   FireOutlined,
   PushpinOutlined,
+  CrownOutlined,
+  RedditCircleFilled,
+  RobotFilled,
+  TrophyFilled,
+  PythonOutlined,
+  LikeOutlined,
 } from '@ant-design/icons';
 
 interface HintTagProps {
@@ -19,6 +24,7 @@ function HintTag(props: HintTagProps) {
     변동적: 'magenta',
     거래량: 'orange',
     안정적: 'geekblue',
+    AI픽: 'gold',
   };
 
   const hintIcons: { [key: string]: React.ReactNode } = {
@@ -27,6 +33,7 @@ function HintTag(props: HintTagProps) {
     변동적: <ThunderboltOutlined />,
     거래량: <FireOutlined />,
     안정적: <PushpinOutlined />,
+    AI픽: <LikeOutlined />,
   };
 
   const color = hintColors[props.hint] || 'default';

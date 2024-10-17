@@ -28,6 +28,19 @@ const btnContainerCss = css`
   gap: 10px;
 `;
 
+const prevBtnCss = css`
+  width: 80px;
+  height: 40px;
+  font-size: 20px;
+  color: white;
+  background-color: ${colorLight.subBtnColor};
+  font-family: 'GmarketSans-Bold';
+  outline: none;
+  &:focus {
+    outline: none;
+  }
+`;
+
 const nextBtnCss = css`
   width: 120px;
   height: 40px;
@@ -43,9 +56,12 @@ const nextBtnCss = css`
 
 function SecondHomePanel() {
   const navigate = useNavigate();
+  const [tutorialIdx, setTutorialIdx] = useState(0);
 
   const tutorial = [
-    '선택한 종목에 투자하세요!<br />종목 하나당 각각 10억, 5억, 1억을 투자할 수 있으며, 레버리지 선택도 가능합니다.<br />제한시간은 30초입니다',
+    '선택한 종목에 투자하세요!<br />종목 하나당 각각 10억, 5억, 1억을 투자할 수 있으며, 레버리지 선택도 가능합니다',
+    '레버리지란, 적은 자본으로 더 큰 금액을 투자할 수 있는 방법입니다 <br />예를 들어, 100배 레버리지를 사용하면 100만 원으로 1억 원을 투자한 효과를 얻을 수 있습니다 <br />하지만 이익이 커지는 만큼 손실도 그만큼 커질 수 있다는 점을 유의해야 합니다',
+    '제한시간은 30초 입니다<br />선택이 어려우시다면 AI가 추천을 활용해보세요!',
   ];
 
   const handleStartGame = () => {
@@ -56,19 +72,40 @@ function SecondHomePanel() {
     <div css={containerCss}>
       <AnimatePresence mode="wait">
         <motion.div
-          key={0}
+          key={tutorialIdx}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
           css={tutorialTextCss}
-          dangerouslySetInnerHTML={{ __html: tutorial[0] }}
-        />
+        >
+          {typeof tutorial[tutorialIdx] === 'string' ? (
+            <div
+              css={tutorialTextCss}
+              dangerouslySetInnerHTML={{ __html: tutorial[tutorialIdx] as string }}
+            />
+          ) : (
+            tutorial[tutorialIdx]
+          )}
+        </motion.div>
       </AnimatePresence>
       <div css={btnContainerCss}>
-        <Button css={nextBtnCss} onClick={handleStartGame}>
-          준비 완료!
-        </Button>
+        {tutorialIdx === 0 ? (
+          ''
+        ) : (
+          <Button css={prevBtnCss} onClick={() => setTutorialIdx(tutorialIdx - 1)}>
+            이전
+          </Button>
+        )}
+        {tutorialIdx === 2 ? (
+          <Button css={nextBtnCss} onClick={handleStartGame}>
+            준비 완료!
+          </Button>
+        ) : (
+          <Button css={nextBtnCss} onClick={() => setTutorialIdx(tutorialIdx + 1)}>
+            다음
+          </Button>
+        )}
       </div>
     </div>
   );

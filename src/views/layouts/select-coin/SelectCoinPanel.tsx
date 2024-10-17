@@ -6,11 +6,11 @@ import { colorLight } from 'styles/colors';
 import { useCoinInfoStore } from 'stores/userInfoStore';
 import { useNavigate } from 'react-router-dom';
 import { Overlay } from 'views/layouts/Overlay';
-import { useCoinListStore } from 'stores/userInfoStore';
+import { useCoinListStore, useDeeplearningRankStore } from 'stores/userInfoStore';
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
 import { HintTag } from 'views/components/HintTag';
-import { ConvertSlashToDash } from 'views/CoinConverter';
+import { Deeplearning } from 'api/models/response';
 
 const containerCss = css`
   width: 100%;
@@ -93,7 +93,7 @@ const seleteInfoBoxCss = css`
 
 const selectButtonCss = (isSelected: boolean, isDisabled: boolean) => css`
   margin-left: 10px;
-  margin-right: 5px;
+  margin-right: 15px;
   height: 26px;
 
   background-color: ${isSelected ? colorLight.mainBtnColor : 'white'};
@@ -231,10 +231,23 @@ const modalOkBtnCss = css`
 `;
 
 function SelectCoinPanel() {
+  const [aiRank, setAiRank] = useState<string[]>([]);
   const { data: deeplearningData } = useQuery({
     queryKey: ['deeplearningData'],
     queryFn: getDeeplearningData,
   });
+
+  const changeDeeplearningRank = useDeeplearningRankStore((state) => state.changeDeeplearningRank);
+
+  const getIndicesByRank = (data: any[], targetRanks: number[] = [1, 2, 3]): number[] => {
+    return data
+      .map((item, index) => (targetRanks.includes(item.rank) ? index : null))
+      .filter((index) => index !== null) as number[]; // null을 제거한 후 number[]로 캐스팅
+  };
+
+  const getRanksByIndices = (data: any[], indices: number[]): number[] => {
+    return indices.map((index) => data[index]?.rank);
+  };
 
   const navigate = useNavigate();
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
@@ -300,6 +313,9 @@ function SelectCoinPanel() {
 
   //modal 상태관리
   const handleOk = () => {
+    if (deeplearningData) {
+      changeDeeplearningRank(getRanksByIndices(deeplearningData, selectedCoins));
+    }
     changeCoinInfo({
       coin_1: { value: coins[selectedCoins[0]].value, label: coins[selectedCoins[0]].label },
       coin_2: { value: coins[selectedCoins[1]].value, label: coins[selectedCoins[1]].label },
@@ -317,6 +333,12 @@ function SelectCoinPanel() {
     }
   };
 
+  const handleRecommendClick = () => {
+    if (deeplearningData) {
+      setSelectedCoins(getIndicesByRank(deeplearningData));
+    }
+  };
+
   return (
     <>
       <div css={containerCss}>
@@ -331,12 +353,12 @@ function SelectCoinPanel() {
           {coins.map((coin, index) => {
             const isSelected = selectedCoins.includes(index);
             const isDisabled = !isSelected && isMaxSelected;
-            if (deeplearningData) {
-              const btcData = deeplearningData.find(
-                (item) => item.code === ConvertSlashToDash(coin.value),
-              );
-              console.log(btcData);
-            }
+            const isLargestRise = deeplearningData?.[index].largest_rise;
+            const isLargestDrop = deeplearningData?.[index].largest_drop;
+            const isMostVolatile = deeplearningData?.[index].most_volatile;
+            const isLeastVolatile = deeplearningData?.[index].least_volatile;
+            const isSpike = deeplearningData?.[index].largest_spike;
+            const aiPick = deeplearningData?.[index].rank;
             return (
               <div key={index} css={coinItemCss}>
                 <div css={coinTitleCss(isSelected)} onClick={() => toggleCoinSelection(index)}>
@@ -344,8 +366,12 @@ function SelectCoinPanel() {
                   <Button css={selectButtonCss(isSelected, isDisabled)} disabled={isDisabled}>
                     {isSelected ? '해제' : '선택'}
                   </Button>
-                  {coin.value === 'BTCUSDT' && <HintTag hint={'하락세'} />}
-                  {/* <HintTag hint={'하락세'} /> */}
+                  {isLargestRise && <HintTag hint={'상승세'} />}
+                  {isLargestDrop && <HintTag hint={'하락세'} />}
+                  {isMostVolatile && <HintTag hint={'변동적'} />}
+                  {isLeastVolatile && <HintTag hint={'안정적'} />}
+                  {isSpike && <HintTag hint={'거래량'} />}
+                  {aiPick === 1 && <HintTag hint={'AI픽'} />}
                 </div>
                 <BtcWidget coin={coin.value} toolbarAllowed={false} />
               </div>
@@ -368,7 +394,9 @@ function SelectCoinPanel() {
           </div>
         </div>
         <div css={buttonContainerCss}>
-          <Button css={recommendCss}>AI 추천</Button>
+          <Button css={recommendCss} onClick={handleRecommendClick}>
+            AI 추천
+          </Button>
           <Button
             css={nextBtnCss(isMaxSelected)}
             onClick={handleNextClick}

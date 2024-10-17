@@ -108,4 +108,23 @@ const useCoinListStore = create(
     },
   ),
 );
-export { useUserInfoStore, useCoinInfoStore, useCoinListStore };
+
+interface DeeplearningRankState {
+  deeplearningRank: number[];
+  changeDeeplearningRank: (value: number[]) => void;
+}
+
+const useDeeplearningRankStore = create(
+  persist<DeeplearningRankState>(
+    (set) => ({
+      deeplearningRank: [],
+      changeDeeplearningRank: (value: number[]) => set({ deeplearningRank: value }),
+    }),
+    {
+      name: 'deeplearningRank',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+
+export { useUserInfoStore, useCoinInfoStore, useCoinListStore, useDeeplearningRankStore };

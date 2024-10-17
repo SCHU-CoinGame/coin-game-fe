@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import { Button, Radio, Modal } from 'antd';
 import { useState, useEffect, useRef } from 'react';
 import { colorLight } from 'styles/colors';
-import { useCoinInfoStore, useUserInfoStore } from 'stores/userInfoStore';
+import { useCoinInfoStore, useUserInfoStore, useDeeplearningRankStore } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { useMutation } from '@tanstack/react-query';
@@ -288,6 +288,9 @@ function SelectMoneyPanel() {
   const [calcTimer, setCalcTimer] = useState<number>(15);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const [balance, setBalance] = useState<number>(1600000000);
+  const { deeplearningRank } = useDeeplearningRankStore((state) => ({
+    deeplearningRank: state.deeplearningRank,
+  }));
   const navigate = useNavigate();
   const upbitData = useMutation({
     mutationFn: getUpbitData,
@@ -318,6 +321,16 @@ function SelectMoneyPanel() {
       console.log('error');
     },
   });
+
+  function assignValuesByOrder(arr: number[]): string[] {
+    const valueMap = ['10', '5', '1']; // 낮은 순서에 맞춰 값 할당
+    const sortedIndices = [...arr].sort((a, b) => a - b); // 배열을 오름차순으로 정렬
+
+    return arr.map((item) => {
+      const index = sortedIndices.indexOf(item); // 원래 배열에서 각 요소의 순서를 찾음
+      return valueMap[index]; // 해당 순서에 맞는 값 반환
+    });
+  }
 
   const [countdown, setCountdown] = useState(5);
   const [timeLeft, setTimeLeft] = useState(35);
@@ -420,20 +433,6 @@ function SelectMoneyPanel() {
     }
   };
 
-  const handleRankingClick = () => {
-    userResultData.mutate({
-      student_id: userInfo.student_id,
-      name: userInfo.name,
-      department: userInfo.department,
-      nickname: userInfo.nickname,
-      coin_1: finalCoinInfo[0].value,
-      coin_2: finalCoinInfo[1].value,
-      coin_3: finalCoinInfo[2].value,
-      balance: balance,
-    });
-    navigate('/rank');
-  };
-
   const handleGameEndClick = () => {
     userResultData.mutate({
       student_id: userInfo.student_id,
@@ -516,6 +515,13 @@ function SelectMoneyPanel() {
   const formatNumberWithComma = (number: number): string => {
     const roundedNumber = Math.floor(number); // 소수점 제거
     return new Intl.NumberFormat('en-US').format(roundedNumber);
+  };
+
+  const handleRecommendClick = () => {
+    const indices = assignValuesByOrder(deeplearningRank);
+    console.log(deeplearningRank);
+    console.log(indices);
+    setSelectedAmounts(indices);
   };
 
   return (
@@ -605,7 +611,9 @@ function SelectMoneyPanel() {
           </div>
 
           <div css={buttonContainerCss(isGameStart)}>
-            <Button css={recommendCss}>AI 추천</Button>
+            <Button css={recommendCss} onClick={handleRecommendClick}>
+              AI 추천
+            </Button>
             <Button
               css={nextBtnCss(isAllSelected)}
               onClick={handleNextClick}
@@ -620,9 +628,6 @@ function SelectMoneyPanel() {
       <Modal
         open={calcTimer === 0}
         footer={[
-          <Button key="back" onClick={handleRankingClick}>
-            랭킹 확인
-          </Button>,
           <Button key="submit" type="primary" onClick={handleGameEndClick}>
             게임 종료
           </Button>,
