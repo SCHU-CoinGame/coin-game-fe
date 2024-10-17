@@ -82,6 +82,12 @@ const buttonContainerCss = css`
   margin-bottom: 20px;
 `;
 
+const leverageRadioContainerCss = css`
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+`;
+
 const recommendCss = css`
   width: 80px;
   height: 40px;
@@ -166,6 +172,7 @@ function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([]);
   const [previousTradePrices, setPreviousTradePrices] = useState<any>({});
+  const [selectedLeverage, setSelectedLeverage] = useState<number>(1);
 
   const upbitData = useMutation({
     mutationFn: getUpbitData,
@@ -228,6 +235,10 @@ function SelectMoneyPanel() {
     });
   };
 
+  const handleLeverageChange = (e: any) => {
+    setSelectedLeverage(e.target.value);
+  };
+
   const isValueSelected = (value: string) => selectedAmounts.includes(value);
   const isAllSelected = selectedAmounts.every((amount) => amount !== '');
 
@@ -257,12 +268,13 @@ function SelectMoneyPanel() {
   const getCoinInfo = async () => {
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
 
       await delay(1000); // 1초 기다림
     }
   };
+
   async function processData(newData: any[]) {
     const updatedCoinInfo = finalCoinInfo.map((coin: any) => {
       // 서버 데이터 중에서 code가 일치하는 항목을 찾음
@@ -284,9 +296,13 @@ function SelectMoneyPanel() {
             // 코인 가격으로 coin.money만큼 구매한 후 가격 변동 계산
             const coinAmount = coin.money / prevTradePrice;
             if (matchingData.change === 'RISE') {
-              newMoney = coinAmount * matchingData.trade_price;
+              newMoney =
+                (coinAmount * matchingData.trade_price - coin.money) * selectedLeverage +
+                coin.money;
             } else if (matchingData.change === 'FALL') {
-              newMoney = coinAmount * matchingData.trade_price;
+              newMoney =
+                (coinAmount * matchingData.trade_price - coin.money) * selectedLeverage +
+                coin.money;
             } else {
               newMoney = coin.money; // 변화가 없다면 그대로 유지
             }
@@ -327,7 +343,6 @@ function SelectMoneyPanel() {
           <div css={progressCss(countdown)}></div>
         </div>
       </div>
-
       <div style={{ width: '100%' }}>
         <div css={titleContainerCss}>
           <div css={coinTitleCss}>
@@ -369,20 +384,16 @@ function SelectMoneyPanel() {
             </Radio.Group>
           ))}
         </div>
-        <div css={coinDataListCss}>
-          {coinDataList.map((coin, index) => (
-            <div css={coinDataCss} key={index}>
-              <hr />
-              <p>코드: {coin.code}</p>
-              <p>가격: {coin.trade_price}</p>
-              <p>변동률: {coin.change_rate}</p>
-              <p>타임스탬프: {coin.timestamp}</p>
-              <p>트레이드 타임: {coin.trade_timestamp}</p>
-            </div>
-          ))}
-        </div>
       </div>
-
+      <div css={leverageRadioContainerCss}>
+        <Radio.Group onChange={handleLeverageChange} value={selectedLeverage} buttonStyle="solid">
+          {[1, 10, 100, 1000].map((value) => (
+            <Radio.Button key={value} value={value}>
+              {value}배
+            </Radio.Button>
+          ))}
+        </Radio.Group>
+      </div>
       <div css={buttonContainerCss}>
         <Button css={recommendCss}>AI 추천</Button>
         <Button css={nextBtnCss(isAllSelected)} onClick={handleNextClick} disabled={!isAllSelected}>
