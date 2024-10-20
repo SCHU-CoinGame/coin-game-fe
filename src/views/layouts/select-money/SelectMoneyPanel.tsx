@@ -520,13 +520,47 @@ function SelectMoneyPanel() {
     }
   };
 
-  const getCoinInfo = async () => {
-    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
-    for (let i = 0; i < 45; i++) {
-      await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
-      setCalcTimer((prevTimer) => prevTimer - 1);
-      await delay(1000); // 1초 기다림
+  const getCoinInfo = async () => {
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    const delay = (ms: number) =>
+      new Promise((resolve, reject) => {
+        const timeout = setTimeout(resolve, ms);
+        controller.signal.addEventListener('abort', () => {
+          clearTimeout(timeout);
+          reject(new Error('Aborted'));
+        });
+      });
+
+    try {
+      for (let i = 0; i < 45; i++) {
+        if (controller.signal.aborted) {
+          console.log('getCoinInfo가 취소되었습니다.');
+          break;
+        }
+
+        await upbitData.mutateAsync();
+
+        setCalcTimer((prevTimer) => prevTimer - 1);
+        await delay(1000);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('getCoinInfo가 중단되었습니다.');
+      } else {
+        console.error('오류 발생:', error);
+      }
+    } finally {
+      setAbortController(null);
+    }
+  };
+
+  const stopGetCoinInfo = () => {
+    if (abortController) {
+      abortController.abort();
     }
   };
 
@@ -631,6 +665,7 @@ function SelectMoneyPanel() {
       if (newStates.every((state) => state)) {
         stopGameTimer();
         setCalcTimer(0);
+        stopGetCoinInfo(); // getCoinInfo 중지
       }
 
       return newStates;
