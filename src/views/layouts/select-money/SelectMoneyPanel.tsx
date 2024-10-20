@@ -542,7 +542,7 @@ function SelectMoneyPanel() {
     }
     setTimeout(() => {
       setCalcTimer(0);
-    }, 1000);
+    }, 300);
   };
 
   const handleGameEndClick = () => {
@@ -657,7 +657,6 @@ function SelectMoneyPanel() {
       // 모든 셀이 체결되었는지 확인
       if (newStates.every((state) => state)) {
         stopGameTimer();
-        setCalcTimer(0);
         stopGetCoinInfo(); // getCoinInfo 중지
       }
 
