@@ -193,7 +193,7 @@ function RankPanel() {
               key={index}
               data-user-name={user.name}
               style={
-                user.name === userInfo.name || user.name.includes(name)
+                user.name === userInfo.name || (name.trim() !== '' && user.name.includes(name))
                   ? { backgroundColor: '#fcff9e' }
                   : {}
               }
