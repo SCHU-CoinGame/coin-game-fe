@@ -39,6 +39,7 @@ function MainPanel() {
       department: '',
       student_id: '',
       nickname: '',
+      reTryCount: 2,
     });
 
     // 코인 정보 초기화

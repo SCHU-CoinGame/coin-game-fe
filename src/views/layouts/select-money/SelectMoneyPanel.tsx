@@ -10,6 +10,7 @@ import { useMutation } from '@tanstack/react-query';
 import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
 import { useNavigate } from 'react-router-dom';
 import { setUserData } from 'api/requests/requestCoin';
+import { requestSignout } from 'api/requests/requestAuth';
 
 const containerCss = css`
   width: 100%;
@@ -219,48 +220,6 @@ const cellBtnContainerCss = (isGameStart: boolean) => css`
     opacity 0.5s ease;
 `;
 
-const firstCellBtnCss = (isSelected: boolean) => css`
-  width: 90px;
-  height: 40px;
-  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
-  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
-  outline: none;
-  &:focus {
-    outline: none;
-  }
-  font-size: 20px;
-  color: white;
-  font-family: 'GmarketSans-Bold';
-`;
-
-const secondCellBtnCss = (isSelected: boolean) => css`
-  width: 90px;
-  height: 40px;
-  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
-  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
-  outline: none;
-  &:focus {
-    outline: none;
-  }
-  font-size: 20px;
-  color: white;
-  font-family: 'GmarketSans-Bold';
-`;
-
-const thirdCellBtnCss = (isSelected: boolean) => css`
-  width: 90px;
-  height: 40px;
-  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
-  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
-  outline: none;
-  &:focus {
-    outline: none;
-  }
-  font-size: 20px;
-  color: white;
-  font-family: 'GmarketSans-Bold';
-`;
-
 const nextBtnCss = (isEnabled: boolean) => css`
   width: 120px;
   height: 40px;
@@ -335,8 +294,16 @@ const modalContainerCss = css`
   height: 300px;
 `;
 
+const finishModalContainerCss = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+`;
+
 const modalTitleCss = css`
-  font-size: 36px;
+  font-size: 28px;
   font-family: 'SpoqaHanSansNeo-Bold';
   margin-bottom: 20px;
 `;
@@ -371,6 +338,16 @@ const cellBtnCss = (isSelected: boolean) => css`
   font-family: 'GmarketSans-Bold';
 `;
 
+const modalOkBtnCss = css`
+  background-color: ${colorLight.mainBtnColor};
+`;
+
+const finishTitleCss = css`
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 20px;
+`;
+
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([0, 0, 0]);
@@ -380,6 +357,7 @@ function SelectMoneyPanel() {
   const [calcTimer, setCalcTimer] = useState<number>(45);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const [balance, setBalance] = useState<number>(1600000000);
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const { deeplearningRank } = useDeeplearningRankStore((state) => ({
     deeplearningRank: state.deeplearningRank,
   }));
@@ -405,8 +383,9 @@ function SelectMoneyPanel() {
     coinInfo: state.coinInfo,
   }));
 
-  const { userInfo } = useUserInfoStore((state) => ({
+  const { userInfo, changeUserInfo } = useUserInfoStore((state) => ({
     userInfo: state.userInfo,
+    changeUserInfo: state.changeUserInfo,
   }));
 
   const userResultData = useMutation({
@@ -538,7 +517,6 @@ function SelectMoneyPanel() {
     try {
       for (let i = 0; i < 45; i++) {
         if (controller.signal.aborted) {
-          console.log('getCoinInfo가 취소되었습니다.');
           break;
         }
 
@@ -575,6 +553,15 @@ function SelectMoneyPanel() {
       coin_3: finalCoinInfo[2].value,
       balance: Math.round(balance),
     });
+    setIsFinishModalOpen(true);
+  };
+
+  const handleRankingClick = () => {
+    navigate('/rank');
+  };
+
+  const handleHomeClick = () => {
+    requestSignout();
     navigate('/signin');
   };
 
@@ -644,9 +631,12 @@ function SelectMoneyPanel() {
     setBalance(updatedCoinInfo.reduce((sum, coin) => sum + coin.money, 0));
   }
 
-  const formatNumberWithComma = (number: number): string => {
-    const roundedNumber = Math.floor(number); // 소수점 제거
-    return new Intl.NumberFormat('en-US').format(roundedNumber);
+  const formatNumberWithComma = (number: number, rounded: boolean): string => {
+    if (rounded) {
+      const roundedNumber = Math.floor(number); // 소수점 제거
+      return new Intl.NumberFormat('en-US').format(roundedNumber);
+    }
+    return new Intl.NumberFormat('en-US').format(number);
   };
 
   const handleRecommendClick = () => {
@@ -672,6 +662,11 @@ function SelectMoneyPanel() {
     });
   };
 
+  const handleReTryClick = () => {
+    changeUserInfo({ ...userInfo, reTryCount: userInfo.reTryCount - 1 });
+    navigate('/');
+  };
+
   return (
     <>
       <div css={containerCss}>
@@ -688,9 +683,9 @@ function SelectMoneyPanel() {
           <div css={nowPriceContainerCss(isGameStart)}>
             {finalCoinInfo.map((coin, index) => (
               <span key={index} css={nowPriceTextCss}>
-                나의 체결가: {formatNumberWithComma(initialTradePrices[coin.value] || 0)}
+                나의 체결가: {formatNumberWithComma(initialTradePrices[coin.value] || 0, false)}
                 <br />
-                실시간 현재가: {formatNumberWithComma(currentTradePrices[coin.value] || 0)}
+                실시간 현재가: {formatNumberWithComma(currentTradePrices[coin.value] || 0, false)}
               </span>
             ))}
           </div>
@@ -737,13 +732,13 @@ function SelectMoneyPanel() {
 
           <div css={scoreContainerCss(isGameStart)}>
             <div css={scoreTextCss(finalCoinInfo[0].money, transformMoneyData(selectedAmounts[0]))}>
-              {formatNumberWithComma(finalCoinInfo[0].money)}
+              {formatNumberWithComma(finalCoinInfo[0].money, true)}
             </div>
             <div css={scoreTextCss(finalCoinInfo[1].money, transformMoneyData(selectedAmounts[1]))}>
-              {formatNumberWithComma(finalCoinInfo[1].money)}
+              {formatNumberWithComma(finalCoinInfo[1].money, true)}
             </div>
             <div css={scoreTextCss(finalCoinInfo[2].money, transformMoneyData(selectedAmounts[2]))}>
-              {formatNumberWithComma(finalCoinInfo[2].money)}
+              {formatNumberWithComma(finalCoinInfo[2].money, true)}
             </div>
           </div>
 
@@ -764,7 +759,7 @@ function SelectMoneyPanel() {
             </Radio.Group>
           </div>
           <div css={balanceCss(isGameStart, balance)}>
-            잔고: {formatNumberWithComma(balance)} 원
+            잔고: {formatNumberWithComma(balance, true)} 원
           </div>
 
           <div css={buttonContainerCss(isGameStart)}>
@@ -787,7 +782,7 @@ function SelectMoneyPanel() {
                 onClick={() => handleCellClick(index)}
                 disabled={cellStates[index]}
               >
-                {cellStates[index] ? '체결' : '매수'}
+                {cellStates[index] ? '체결' : '매도'}
               </Button>
             ))}
           </div>
@@ -797,8 +792,11 @@ function SelectMoneyPanel() {
       <Modal
         open={calcTimer === 0}
         footer={[
+          <Button key="reTry" onClick={handleReTryClick} disabled={userInfo.reTryCount === 0}>
+            재도전(남은기회 {userInfo.reTryCount}회)
+          </Button>,
           <Button key="submit" type="primary" onClick={handleGameEndClick}>
-            게임 종료
+            점수 등록
           </Button>,
         ]}
         closable={false}
@@ -808,7 +806,31 @@ function SelectMoneyPanel() {
         <div css={modalContainerCss}>
           <div css={modalTitleCss}>게임 종료!</div>
           <div css={modalContentCss(balance)}>
-            <div>총 잔고: {formatNumberWithComma(balance)} 원</div>
+            <div>총 잔고: {formatNumberWithComma(balance, true)} 원</div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        title="랭킹 등록 완료"
+        open={isFinishModalOpen}
+        footer={[
+          <Button key="ranking" onClick={handleRankingClick}>
+            랭킹 확인
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleHomeClick}>
+            홈으로
+          </Button>,
+        ]}
+        closable={false}
+        width={600}
+        centered
+      >
+        <div css={finishModalContainerCss}>
+          <div css={finishTitleCss}>
+            점수가 등록되었습니다.
+            <br />
+            플레이해주셔서 감사합니다!
           </div>
         </div>
       </Modal>
@@ -816,7 +838,7 @@ function SelectMoneyPanel() {
       <Modal
         open={isTimeOverModalOpen}
         footer={[
-          <Button key="submit" type="primary" onClick={handleNextClick}>
+          <Button key="submit" type="primary" onClick={handleNextClick} css={modalOkBtnCss}>
             확인
           </Button>,
         ]}

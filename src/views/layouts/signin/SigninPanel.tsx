@@ -85,7 +85,7 @@ function SigninPanel() {
   const onFinish = (values: any) => {
     upbitData.mutate();
     console.log(values);
-    useUserInfoStore.getState().changeUserInfo(values);
+    useUserInfoStore.getState().changeUserInfo({ ...values, reTryCount: 2 });
     requestSignin();
     navigate('/');
   };

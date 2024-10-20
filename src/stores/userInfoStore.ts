@@ -7,12 +7,14 @@ interface UserInfoState {
     department: string;
     student_id: string;
     nickname: string;
+    reTryCount: number;
   };
   changeUserInfo: (value: {
     name: string;
     department: string;
     student_id: string;
     nickname: string;
+    reTryCount: number;
   }) => void;
 }
 
@@ -24,12 +26,14 @@ const useUserInfoStore = create(
         department: '',
         student_id: '',
         nickname: '',
+        reTryCount: 2,
       },
       changeUserInfo: (value: {
         name: string;
         department: string;
         student_id: string;
         nickname: string;
+        reTryCount: number;
       }) => set({ userInfo: value }),
     }),
     {
