@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getUserData } from 'api/requests/requestCoin';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
-import { HintTag } from 'views/components/HintTag';
+import { Skeleton } from 'antd';
 
 const homeIconCss = css`
   position: absolute;
@@ -80,6 +80,7 @@ function RankPanel() {
       department: '',
       student_id: '',
       nickname: '',
+      reTryCount: 2,
     });
 
     // 코인 정보 초기화
@@ -102,6 +103,10 @@ function RankPanel() {
     queryKey: ['userData'],
     queryFn: getUserData,
   });
+
+  if (userData.isLoading) {
+    return <Skeleton active />;
+  }
 
   return (
     <div css={containerCss}>
