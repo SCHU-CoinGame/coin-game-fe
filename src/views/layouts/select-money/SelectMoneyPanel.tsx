@@ -433,8 +433,6 @@ function SelectMoneyPanel() {
   const [timeLeft, setTimeLeft] = useState(35);
   const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const timerRef = useRef<number | null>(null);
 
   const handleTimeOver = () => {
     setSelectedAmounts(['10', '5', '1']);
@@ -522,37 +520,17 @@ function SelectMoneyPanel() {
     }
   };
 
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsTimerRunning(false);
-  };
-
   const getCoinInfo = async () => {
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    setIsTimerRunning(true);
-
     for (let i = 0; i < 45; i++) {
-      if (!isTimerRunning) break;
-
       await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
       setCalcTimer((prevTimer) => prevTimer - 1);
-
-      timerRef.current = setTimeout(async () => {
-        await delay(1000); // 1초 기다림
-      }, 1000);
-
-      if (i === 44) {
-        setIsTimerRunning(false);
-      }
+      await delay(1000); // 1초 기다림
     }
   };
 
   const handleGameEndClick = () => {
-    stopTimer();
     userResultData.mutate({
       student_id: userInfo.student_id,
       name: userInfo.name,
@@ -652,7 +630,6 @@ function SelectMoneyPanel() {
       // 모든 셀이 체결되었는지 확인
       if (newStates.every((state) => state)) {
         stopGameTimer();
-        stopTimer();
         setCalcTimer(0);
       }
 
