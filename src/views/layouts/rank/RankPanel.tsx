@@ -162,9 +162,10 @@ function RankPanel() {
   return (
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
-      <div css={emptyBoxCss}></div>
-      <div css={emptyBoxCss}></div>
+
       <div css={titleCss}>
+        <div css={emptyBoxCss}></div>
+        <div css={emptyBoxCss}></div>
         순천향대 코인왕
         <Input
           placeholder="이름"
@@ -191,7 +192,11 @@ function RankPanel() {
               css={rankItemCss}
               key={index}
               data-user-name={user.name}
-              style={user.name === userInfo.name ? { backgroundColor: '#fcff9e' } : {}}
+              style={
+                user.name === userInfo.name || user.name.includes(name)
+                  ? { backgroundColor: '#fcff9e' }
+                  : {}
+              }
             >
               <div css={rankCss}>{index + 1}등</div>
               <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
