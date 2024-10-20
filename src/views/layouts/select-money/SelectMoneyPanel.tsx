@@ -385,6 +385,8 @@ function SelectMoneyPanel() {
   }));
 
   const [cellStates, setCellStates] = useState<boolean[]>([false, false, false]);
+  const [initialTradePrices, setInitialTradePrices] = useState<{ [key: string]: number }>({});
+  const [currentTradePrices, setCurrentTradePrices] = useState<{ [key: string]: number }>({});
 
   const navigate = useNavigate();
   const upbitData = useMutation({
@@ -431,6 +433,8 @@ function SelectMoneyPanel() {
   const [timeLeft, setTimeLeft] = useState(35);
   const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerRef = useRef<number | null>(null);
 
   const handleTimeOver = () => {
     setSelectedAmounts(['10', '5', '1']);
@@ -518,17 +522,37 @@ function SelectMoneyPanel() {
     }
   };
 
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsTimerRunning(false);
+  };
+
   const getCoinInfo = async () => {
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+    setIsTimerRunning(true);
+
     for (let i = 0; i < 45; i++) {
+      if (!isTimerRunning) break;
+
       await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
       setCalcTimer((prevTimer) => prevTimer - 1);
-      await delay(1000); // 1초 기다림
+
+      timerRef.current = setTimeout(async () => {
+        await delay(1000); // 1초 기다림
+      }, 1000);
+
+      if (i === 44) {
+        setIsTimerRunning(false);
+      }
     }
   };
 
   const handleGameEndClick = () => {
+    stopTimer();
     userResultData.mutate({
       student_id: userInfo.student_id,
       name: userInfo.name,
@@ -544,15 +568,27 @@ function SelectMoneyPanel() {
 
   async function processData(newData: any[]) {
     const updatedCoinInfo = finalCoinInfo.map((coin: any, index: number) => {
-      // cellStates[index]가 true면 이미 체결된 상태이므로 변경하지 않음
       if (cellStates[index]) {
         return coin;
       }
 
       const matchingData = newData.find((data) => data.code === coin.value);
-      console.log('일치하는 데이터만', matchingData);
 
       if (matchingData) {
+        // 현재 거래 가격 업데이트
+        setCurrentTradePrices((prev) => ({
+          ...prev,
+          [matchingData.code]: matchingData.trade_price,
+        }));
+
+        // 초기 거래 가격 설정 (아직 설정되지 않은 경우에만)
+        if (!initialTradePrices[matchingData.code]) {
+          setInitialTradePrices((prev) => ({
+            ...prev,
+            [matchingData.code]: matchingData.trade_price,
+          }));
+        }
+
         const prevTradePrice = previousTradePrices[matchingData.code];
         console.log('이전 거래 가격', prevTradePrice);
         console.log('현재 거래 가격', matchingData.trade_price);
@@ -612,6 +648,14 @@ function SelectMoneyPanel() {
     setCellStates((prevStates) => {
       const newStates = [...prevStates];
       newStates[index] = true;
+
+      // 모든 셀이 체결되었는지 확인
+      if (newStates.every((state) => state)) {
+        stopGameTimer();
+        stopTimer();
+        setCalcTimer(0);
+      }
+
       return newStates;
     });
   };
@@ -630,21 +674,13 @@ function SelectMoneyPanel() {
         </div>
         <div css={mainBodyCss}>
           <div css={nowPriceContainerCss(isGameStart)}>
-            <span css={nowPriceTextCss}>
-              나의 체결가: 77,500,000
-              <br />
-              실시간 현재가: 77,000,000
-            </span>
-            <span css={nowPriceTextCss}>
-              나의 체결가: 77,500,000
-              <br />
-              실시간 현재가: 77,000,000
-            </span>
-            <span css={nowPriceTextCss}>
-              나의 체결가: 77,500,000
-              <br />
-              실시간 현재가: 77,000,000
-            </span>
+            {finalCoinInfo.map((coin, index) => (
+              <span key={index} css={nowPriceTextCss}>
+                나의 체결가: {formatNumberWithComma(initialTradePrices[coin.value] || 0)}
+                <br />
+                실시간 현재가: {formatNumberWithComma(currentTradePrices[coin.value] || 0)}
+              </span>
+            ))}
           </div>
           <div css={titleContainerCss}>
             <div css={coinTitleCss}>
