@@ -1,7 +1,17 @@
 import { coinApi } from 'api/coinApi';
-import { COIN_API, DEEPLEARNING_API, SET_USER_DATA_API, GET_USER_DATA_API } from 'api/constant';
+import {
+  COIN_API,
+  DEEPLEARNING_API,
+  SET_USER_DATA_API,
+  GET_USER_DATA_API,
+  GET_DEPARTMENT_LIST_API,
+} from 'api/constant';
 import { UpbitData, Deeplearning, GetUserDataResponse } from 'api/models/response';
-import { SetUserDataRequest, GetUserDataRequest } from 'api/models/request';
+import {
+  SetUserDataRequest,
+  GetDepartmentListResponse,
+  GetUserDataRequest,
+} from 'api/models/request';
 
 async function getUpbitData() {
   try {
@@ -43,4 +53,14 @@ async function getUserData(data: GetUserDataRequest) {
   }
 }
 
-export { getUpbitData, getDeeplearningData, setUserData, getUserData };
+async function getDepartmentData() {
+  try {
+    const res = await coinApi.get<GetDepartmentListResponse>(GET_DEPARTMENT_LIST_API);
+    if (res.status !== 200) throw new Error(`Unexpected status code: ${res.status}`);
+    return res.data;
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : '문제 발생');
+  }
+}
+
+export { getUpbitData, getDeeplearningData, setUserData, getUserData, getDepartmentData };

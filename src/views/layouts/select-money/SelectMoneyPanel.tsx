@@ -53,7 +53,7 @@ const progressCss = (countdown: number) => css`
   height: 16px;
   border-radius: 5px 0 0 5px;
   background-color: ${colorLight.mainBtnColor};
-  transition: width 30s linear;
+  transition: width 20s linear;
 `;
 
 const titleContainerCss = css`
@@ -409,7 +409,7 @@ function SelectMoneyPanel() {
   }
 
   const [countdown, setCountdown] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(35);
+  const [timeLeft, setTimeLeft] = useState(25);
   const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
 
@@ -540,6 +540,9 @@ function SelectMoneyPanel() {
     if (abortController) {
       abortController.abort();
     }
+    setTimeout(() => {
+      setCalcTimer(0);
+    }, 1000);
   };
 
   const handleGameEndClick = () => {
@@ -753,7 +756,7 @@ function SelectMoneyPanel() {
             >
               {[1, 10, 100, 1000].map((value) => (
                 <Radio.Button key={value} value={value} css={leverageRadioButtonCss}>
-                  {value}배
+                  {value}배{value === 1000 ? '!!' : ''}
                 </Radio.Button>
               ))}
             </Radio.Group>

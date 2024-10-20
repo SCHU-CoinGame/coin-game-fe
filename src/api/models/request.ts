@@ -12,3 +12,7 @@ export interface SetUserDataRequest {
 export interface GetUserDataRequest {
   department: string;
 }
+
+export interface GetDepartmentListResponse {
+  department: string[];
+}

@@ -72,7 +72,7 @@ const progressCss = (countdown: number) => css`
   height: 16px;
   border-radius: 5px 0 0 5px;
   background-color: ${colorLight.mainBtnColor};
-  transition: width 30s linear;
+  transition: width 20s linear;
 `;
 
 const buttonContainerCss = css`
@@ -255,7 +255,7 @@ function SelectCoinPanel() {
 
   // 시작 카운트다운
   const [countdown, setCountdown] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(35);
+  const [timeLeft, setTimeLeft] = useState(25);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
 

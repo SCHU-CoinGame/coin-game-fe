@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import { HomeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getUserData } from 'api/requests/requestCoin';
+import { getUserData, getDepartmentData } from 'api/requests/requestCoin';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
 import { Skeleton, Input, Select } from 'antd';
@@ -34,7 +34,7 @@ const titleCss = css`
   gap: 10px;
   width: 100%;
   word-break: keep-all;
-  font-size: 48px;
+  font-size: 52px;
   font-family: 'GmarketSans-Medium';
   margin-top: 30px;
   margin-bottom: 10px;
@@ -85,6 +85,11 @@ const selectCss = css`
   height: 30px;
 `;
 
+const emptyBoxCss = css`
+  width: 200px;
+  height: 30px;
+`;
+
 function RankPanel() {
   const navigate = useNavigate();
   const changeUserInfo = useUserInfoStore((state) => state.changeUserInfo);
@@ -96,10 +101,28 @@ function RankPanel() {
   const [name, setName] = useState(userInfo.name || '');
   const [department, setDepartment] = useState('all');
 
+  function createLabelValueArray(arr: string[]) {
+    return arr.map((item) => ({ label: item, value: item }));
+  }
+
   const userData = useQuery({
     queryKey: ['userData', department],
     queryFn: () => getUserData({ department: department }),
   });
+
+  const departmentData = useQuery({
+    queryKey: ['departmentData'],
+    queryFn: () => getDepartmentData(),
+  });
+
+  let departmentOptions: { label: string; value: string }[] = [];
+
+  if (departmentData.data) {
+    departmentOptions = [
+      { label: '전체', value: 'all' },
+      ...createLabelValueArray(departmentData.data.department),
+    ];
+  }
 
   useEffect(() => {
     if (userData.data && rankContainerRef.current) {
@@ -136,15 +159,11 @@ function RankPanel() {
     return new Intl.NumberFormat('en-US').format(number);
   };
 
-  const departmentOption = [
-    { label: '전체', value: 'all' },
-    { label: '컴퓨터공학과', value: '컴퓨터공학과' },
-    { label: '의료IT공학과', value: '의료IT공학과' },
-  ];
-
   return (
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
+      <div css={emptyBoxCss}></div>
+      <div css={emptyBoxCss}></div>
       <div css={titleCss}>
         순천향대 코인왕
         <Input
@@ -158,7 +177,7 @@ function RankPanel() {
           optionFilterProp="label"
           placeholder="학과"
           css={selectCss}
-          options={departmentOption}
+          options={departmentOptions}
           value={department}
           onChange={(value) => setDepartment(value)}
         />
