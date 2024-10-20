@@ -7,7 +7,7 @@ const globalCss = css`
     src: url('/assets/SpoqaHanSansNeo-Regular.woff2') format('woff2');
   }
   @font-face {
-    font-family: 'SpoqaHanSansNeo';
+    font-family: 'SpoqaHanSansNeo-Medium';
     font-style: normal;
     src: url('/assets/SpoqaHanSansNeo-Medium.woff2') format('woff2');
   }
@@ -27,7 +27,7 @@ const globalCss = css`
     box-sizing: border-box; // padding 사이즈 포함하여 width, height 계산
     margin: 0;
     padding: 0;
-    font-family: 'SpoqaHanSansNeo-Regular';
+    font-family: 'SpoqaHanSansNeo-Medium';
   }
 `;
 

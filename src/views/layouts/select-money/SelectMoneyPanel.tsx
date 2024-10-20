@@ -69,7 +69,29 @@ const mainBodyCss = css`
   align-items: center;
   justify-content: flex-start;
   height: 780px;
-  margin-top: 50px;
+`;
+
+const nowPriceContainerCss = (isGameStart: boolean) => css`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  height: 50px;
+  justify-items: center;
+  position: relative;
+  font-size: 18px;
+  top: ${isGameStart ? '460px' : '570px'};
+  opacity: ${isGameStart ? 1 : 0};
+  transition:
+    top 0.2s ease,
+    opacity 0.5s ease;
+`;
+
+const nowPriceTextCss = css`
+  display: inline-block;
+  text-align: end;
+  width: fit-content;
+  font-size: 18px;
+  font-family: 'SpoqaHanSansNeo-Bold';
 `;
 
 const chartContainerCss = css`
@@ -112,7 +134,7 @@ const buttonContainerCss = (isGameStart: boolean) => css`
   position: relative;
   flex-direction: row;
   gap: 10px;
-  margin-top: 80px;
+  margin-top: 0px;
   top: ${isGameStart ? '-800px' : '0'};
   opacity: ${isGameStart ? 0 : 1};
   z-index: 0;
@@ -128,7 +150,7 @@ const scoreContainerCss = (isGameStart: boolean) => css`
   flex-direction: column;
   align-items: center;
   position: relative;
-  top: ${isGameStart ? '0px' : '-100px'};
+  top: ${isGameStart ? '20px' : '-120px'};
   opacity: ${isGameStart ? 1 : 0};
   transition:
     top 0.2s ease,
@@ -149,7 +171,7 @@ const balanceCss = (isGameStart: boolean, balance: number) => css`
   font-size: ${isGameStart ? '48px' : '36px'};
   color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
   font-family: 'SpoqaHanSansNeo-Bold';
-  top: ${isGameStart ? '0px' : '-100px'};
+  top: ${isGameStart ? '30px' : '-100px'};
   opacity: ${isGameStart ? 1 : 0};
   transition:
     top 0.2s ease,
@@ -181,6 +203,62 @@ const recommendCss = css`
   &:focus {
     outline: none;
   }
+`;
+
+const cellBtnContainerCss = (isGameStart: boolean) => css`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  position: relative;
+  width: 100%;
+  gap: 10px;
+  top: ${isGameStart ? '-170px' : '-350px'};
+  opacity: ${isGameStart ? 1 : 0};
+  transition:
+    top 0.2s ease,
+    opacity 0.5s ease;
+`;
+
+const firstCellBtnCss = (isSelected: boolean) => css`
+  width: 90px;
+  height: 40px;
+  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
+  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
+  outline: none;
+  &:focus {
+    outline: none;
+  }
+  font-size: 20px;
+  color: white;
+  font-family: 'GmarketSans-Bold';
+`;
+
+const secondCellBtnCss = (isSelected: boolean) => css`
+  width: 90px;
+  height: 40px;
+  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
+  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
+  outline: none;
+  &:focus {
+    outline: none;
+  }
+  font-size: 20px;
+  color: white;
+  font-family: 'GmarketSans-Bold';
+`;
+
+const thirdCellBtnCss = (isSelected: boolean) => css`
+  width: 90px;
+  height: 40px;
+  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
+  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
+  outline: none;
+  &:focus {
+    outline: none;
+  }
+  font-size: 20px;
+  color: white;
+  font-family: 'GmarketSans-Bold';
 `;
 
 const nextBtnCss = (isEnabled: boolean) => css`
@@ -279,18 +357,35 @@ const timeOverModalCss = css`
   margin-top: 30px;
 `;
 
+const cellBtnCss = (isSelected: boolean) => css`
+  width: 90px;
+  height: 40px;
+  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
+  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
+  outline: none;
+  &:focus {
+    outline: none;
+  }
+  font-size: 20px;
+  color: white;
+  font-family: 'GmarketSans-Bold';
+`;
+
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([0, 0, 0]);
   const [previousTradePrices, setPreviousTradePrices] = useState<any>({});
   const [selectedLeverage, setSelectedLeverage] = useState<number>(1);
   const [isGameStart, setIsGameStart] = useState<boolean>(false);
-  const [calcTimer, setCalcTimer] = useState<number>(15);
+  const [calcTimer, setCalcTimer] = useState<number>(45);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const [balance, setBalance] = useState<number>(1600000000);
   const { deeplearningRank } = useDeeplearningRankStore((state) => ({
     deeplearningRank: state.deeplearningRank,
   }));
+
+  const [cellStates, setCellStates] = useState<boolean[]>([false, false, false]);
+
   const navigate = useNavigate();
   const upbitData = useMutation({
     mutationFn: getUpbitData,
@@ -426,7 +521,7 @@ function SelectMoneyPanel() {
   const getCoinInfo = async () => {
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 45; i++) {
       await upbitData.mutateAsync(); // 데이터 요청 및 처리 대기
       setCalcTimer((prevTimer) => prevTimer - 1);
       await delay(1000); // 1초 기다림
@@ -448,52 +543,43 @@ function SelectMoneyPanel() {
   };
 
   async function processData(newData: any[]) {
-    const updatedCoinInfo = finalCoinInfo.map((coin: any) => {
-      // 서버 데이터 중에서 code가 일치하는 항목을 찾음
+    const updatedCoinInfo = finalCoinInfo.map((coin: any, index: number) => {
+      // cellStates[index]가 true면 이미 체결된 상태이므로 변경하지 않음
+      if (cellStates[index]) {
+        return coin;
+      }
+
       const matchingData = newData.find((data) => data.code === coin.value);
       console.log('일치하는 데이터만', matchingData);
 
       if (matchingData) {
-        // 이전에 받은 trade_price와 비교하여 변경 여부 확인
         const prevTradePrice = previousTradePrices[matchingData.code];
         console.log('이전 거래 가격', prevTradePrice);
         console.log('현재 거래 가격', matchingData.trade_price);
 
-        // 첫 번째 요청은 계산하지 않음
         if (prevTradePrice) {
-          // trade_price가 변경된 경우만 업데이트
           if (prevTradePrice !== matchingData.trade_price) {
             let newMoney;
 
-            // 코인 가격으로 coin.money만큼 구매한 후 가격 변동 계산
             const coinAmount = coin.money / prevTradePrice;
-            if (matchingData.change === 'RISE') {
-              newMoney =
-                coin.money +
-                coinAmount * (matchingData.trade_price - prevTradePrice) * selectedLeverage;
-            } else if (matchingData.change === 'FALL') {
+            if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
               newMoney =
                 coin.money +
                 coinAmount * (matchingData.trade_price - prevTradePrice) * selectedLeverage;
             } else {
-              newMoney = coin.money; // 변화가 없다면 그대로 유지
+              newMoney = coin.money;
             }
 
-            // 금액이 0 이하로 내려가지 않도록 제한
-            if (newMoney < 0) {
-              newMoney = 0;
-            }
+            newMoney = Math.max(newMoney, 0);
 
-            // 해당 code의 현재 trade_price를 상태로 저장 (이전 상태와 병합)
             setPreviousTradePrices((prevTradePrices: any) => ({
               ...prevTradePrices,
               [matchingData.code]: matchingData.trade_price,
             }));
 
-            return { ...coin, money: newMoney }; // 업데이트된 money 반환
+            return { ...coin, money: newMoney };
           }
         } else {
-          // 첫 번째 요청일 경우 현재 trade_price를 상태에 저장만 함
           setPreviousTradePrices((prevTradePrices: any) => ({
             ...prevTradePrices,
             [matchingData.code]: matchingData.trade_price,
@@ -501,15 +587,13 @@ function SelectMoneyPanel() {
         }
       }
 
-      // 일치하지 않거나 trade_price가 동일하면 기존 상태 유지
       return coin;
     });
 
     console.log('값 변경!', updatedCoinInfo);
 
-    // 상태값 업데이트
     setFinalCoinInfo(updatedCoinInfo);
-    setBalance(updatedCoinInfo[0].money + updatedCoinInfo[1].money + updatedCoinInfo[2].money);
+    setBalance(updatedCoinInfo.reduce((sum, coin) => sum + coin.money, 0));
   }
 
   const formatNumberWithComma = (number: number): string => {
@@ -522,6 +606,14 @@ function SelectMoneyPanel() {
     console.log(deeplearningRank);
     console.log(indices);
     setSelectedAmounts(indices);
+  };
+
+  const handleCellClick = (index: number) => {
+    setCellStates((prevStates) => {
+      const newStates = [...prevStates];
+      newStates[index] = true;
+      return newStates;
+    });
   };
 
   return (
@@ -537,6 +629,23 @@ function SelectMoneyPanel() {
           </div>
         </div>
         <div css={mainBodyCss}>
+          <div css={nowPriceContainerCss(isGameStart)}>
+            <span css={nowPriceTextCss}>
+              나의 체결가: 77,500,000
+              <br />
+              실시간 현재가: 77,000,000
+            </span>
+            <span css={nowPriceTextCss}>
+              나의 체결가: 77,500,000
+              <br />
+              실시간 현재가: 77,000,000
+            </span>
+            <span css={nowPriceTextCss}>
+              나의 체결가: 77,500,000
+              <br />
+              실시간 현재가: 77,000,000
+            </span>
+          </div>
           <div css={titleContainerCss}>
             <div css={coinTitleCss}>
               {coinInfo.coin_1.label} {coinInfo.coin_1.value}
@@ -621,6 +730,18 @@ function SelectMoneyPanel() {
             >
               게임 시작!
             </Button>
+          </div>
+          <div css={cellBtnContainerCss(isGameStart)}>
+            {[0, 1, 2].map((index) => (
+              <Button
+                key={index}
+                css={cellBtnCss(cellStates[index])}
+                onClick={() => handleCellClick(index)}
+                disabled={cellStates[index]}
+              >
+                {cellStates[index] ? '체결' : '매수'}
+              </Button>
+            ))}
           </div>
         </div>
       </div>
