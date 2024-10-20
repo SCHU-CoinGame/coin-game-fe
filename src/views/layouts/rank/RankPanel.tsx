@@ -167,21 +167,19 @@ function RankPanel() {
         <Skeleton active />
       ) : (
         <div css={rankContainerCss} ref={rankContainerRef}>
-          {userData.data.data
-            .filter((user) => user.name.includes(name))
-            .map((user, index) => (
-              <div
-                css={rankItemCss}
-                key={index}
-                data-user-name={user.name}
-                style={user.name === userInfo.name ? { backgroundColor: '#fcff9e' } : {}}
-              >
-                <div css={rankCss}>{index + 1}등</div>
-                <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
-                <div css={rankCss}>{user.name}</div>
-                <div css={rankCss}>{user.department}</div>
-              </div>
-            ))}
+          {userData.data.data.map((user, index) => (
+            <div
+              css={rankItemCss}
+              key={index}
+              data-user-name={user.name}
+              style={user.name === userInfo.name ? { backgroundColor: '#fcff9e' } : {}}
+            >
+              <div css={rankCss}>{index + 1}등</div>
+              <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
+              <div css={rankCss}>{user.name}</div>
+              <div css={rankCss}>{user.department}</div>
+            </div>
+          ))}
         </div>
       )}
     </div>
