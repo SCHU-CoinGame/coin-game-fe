@@ -599,16 +599,23 @@ function SelectMoneyPanel() {
           if (prevTradePrice !== matchingData.trade_price) {
             let newMoney;
 
-            const coinAmount = coin.money / prevTradePrice;
+            // 정수 기반 계산을 위해 원 단위로 변환
+            const coinMoneyInWon = Math.round(coin.money * 100);
+            const prevTradePriceInWon = Math.round(prevTradePrice * 100);
+            const currentTradePriceInWon = Math.round(matchingData.trade_price * 100);
+
+            // 코인 수량 계산 (정수 나눗셈)
+            const coinAmount = Math.floor(coinMoneyInWon / prevTradePriceInWon);
+
             if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
-              newMoney =
-                coin.money +
-                coinAmount * (matchingData.trade_price - prevTradePrice) * selectedLeverage;
+              const priceDifference = currentTradePriceInWon - prevTradePriceInWon;
+              newMoney = coinMoneyInWon + coinAmount * priceDifference * selectedLeverage;
             } else {
-              newMoney = coin.money;
+              newMoney = coinMoneyInWon;
             }
 
-            newMoney = Math.max(newMoney, 0);
+            // 원 단위에서 다시 변환
+            newMoney = Math.max(newMoney / 100, 0);
 
             setPreviousTradePrices((prevTradePrices: any) => ({
               ...prevTradePrices,
