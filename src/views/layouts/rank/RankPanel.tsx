@@ -95,11 +95,11 @@ function RankPanel() {
   const rankContainerRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(userInfo.name || '');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState('all');
 
   const userData = useQuery({
-    queryKey: ['userData'],
-    queryFn: getUserData,
+    queryKey: ['userData', department],
+    queryFn: () => getUserData({ department: department }),
   });
 
   useEffect(() => {
@@ -137,6 +137,12 @@ function RankPanel() {
     return new Intl.NumberFormat('en-US').format(number);
   };
 
+  const departmentOption = [
+    { label: '전체', value: 'all' },
+    { label: '컴퓨터공학과', value: '컴퓨터공학과' },
+    { label: '의료IT공학과', value: '의료IT공학과' },
+  ];
+
   return (
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
@@ -148,7 +154,13 @@ function RankPanel() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <Select placeholder="학과" css={selectCss} />
+        <Select
+          placeholder="학과"
+          css={selectCss}
+          options={departmentOption}
+          value={department}
+          onChange={(value) => setDepartment(value)}
+        />
       </div>
       {userData.isLoading || !userData.data ? (
         <Skeleton active />

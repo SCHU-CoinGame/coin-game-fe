@@ -8,3 +8,7 @@ export interface SetUserDataRequest {
   coin_3: string;
   balance: number;
 }
+
+export interface GetUserDataRequest {
+  department: string;
+}

@@ -1,7 +1,7 @@
 import { coinApi } from 'api/coinApi';
 import { COIN_API, DEEPLEARNING_API, SET_USER_DATA_API, GET_USER_DATA_API } from 'api/constant';
 import { UpbitData, Deeplearning, GetUserDataResponse } from 'api/models/response';
-import { SetUserDataRequest } from 'api/models/request';
+import { SetUserDataRequest, GetUserDataRequest } from 'api/models/request';
 
 async function getUpbitData() {
   try {
@@ -33,9 +33,9 @@ async function setUserData(data: SetUserDataRequest) {
   }
 }
 
-async function getUserData() {
+async function getUserData(data: GetUserDataRequest) {
   try {
-    const res = await coinApi.get<GetUserDataResponse>(GET_USER_DATA_API);
+    const res = await coinApi.get<GetUserDataResponse>(GET_USER_DATA_API, { params: data });
     if (res.status !== 200) throw new Error(`Unexpected status code: ${res.status}`);
     return res.data;
   } catch (error) {
