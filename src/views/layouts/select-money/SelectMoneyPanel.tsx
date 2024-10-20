@@ -291,7 +291,7 @@ const modalContainerCss = css`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 300px;
+  height: 200px;
 `;
 
 const finishModalContainerCss = css`
@@ -313,6 +313,11 @@ const modalContentCss = (balance: number) => css`
   font-family: 'SpoqaHanSansNeo-Bold';
   margin-bottom: 20px;
   color: ${balance >= 1600000000 ? '#C84A31' : '#0062DF'};
+`;
+
+const modalContentTextCss = css`
+  font-size: 48px;
+  font-family: 'SpoqaHanSansNeo-Bold';
 `;
 
 const timeOverModalCss = css`
@@ -804,7 +809,7 @@ function SelectMoneyPanel() {
           <Button key="reTry" onClick={handleReTryClick} disabled={userInfo.reTryCount === 0}>
             재도전(남은기회 {userInfo.reTryCount}회)
           </Button>,
-          <Button key="submit" type="primary" onClick={handleGameEndClick}>
+          <Button key="submit" type="primary" onClick={handleGameEndClick} css={modalOkBtnCss}>
             점수 등록
           </Button>,
         ]}
@@ -815,7 +820,7 @@ function SelectMoneyPanel() {
         <div css={modalContainerCss}>
           <div css={modalTitleCss}>게임 종료!</div>
           <div css={modalContentCss(balance)}>
-            <div>총 잔고: {formatNumberWithComma(balance, true)} 원</div>
+            <div css={modalContentTextCss}>총 잔고: {formatNumberWithComma(balance, true)} 원</div>
           </div>
         </div>
       </Modal>
@@ -824,11 +829,11 @@ function SelectMoneyPanel() {
         title="랭킹 등록 완료"
         open={isFinishModalOpen}
         footer={[
-          <Button key="ranking" onClick={handleRankingClick}>
-            랭킹 확인
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleHomeClick}>
+          <Button key="submit" onClick={handleHomeClick}>
             홈으로
+          </Button>,
+          <Button key="ranking" type="primary" onClick={handleRankingClick} css={modalOkBtnCss}>
+            랭킹 확인
           </Button>,
         ]}
         closable={false}
