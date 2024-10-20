@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { css } from '@emotion/react';
 import { HomeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -72,6 +73,25 @@ function RankPanel() {
   const changeUserInfo = useUserInfoStore((state) => state.changeUserInfo);
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
   const changeBalance = useCoinInfoStore((state) => state.changeBalance);
+  const { userInfo } = useUserInfoStore();
+  const { coinInfo } = useCoinInfoStore();
+  const rankContainerRef = useRef<HTMLDivElement>(null);
+
+  const userData = useQuery({
+    queryKey: ['userData'],
+    queryFn: getUserData,
+  });
+
+  useEffect(() => {
+    if (userData.data && rankContainerRef.current) {
+      const userRankItem = rankContainerRef.current.querySelector(
+        `[data-user-name="${userInfo.name}"]`,
+      );
+      if (userRankItem) {
+        userRankItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [userData.data, userInfo.name]);
 
   const handleHomeClick = () => {
     // 사용자 정보 초기화
@@ -98,12 +118,6 @@ function RankPanel() {
   const formatNumberWithComma = (number: number): string => {
     return new Intl.NumberFormat('en-US').format(number);
   };
-
-  const userData = useQuery({
-    queryKey: ['userData'],
-    queryFn: getUserData,
-  });
-
   if (userData.isLoading) {
     return <Skeleton active />;
   }
@@ -112,10 +126,17 @@ function RankPanel() {
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
       <div css={titleCss}>순천향대 코인왕</div>
-      {userData.data && (
-        <div css={rankContainerCss}>
+      {userData.isLoading || !userData.data ? (
+        <Skeleton active />
+      ) : (
+        <div css={rankContainerCss} ref={rankContainerRef}>
           {userData.data.data.map((user, index) => (
-            <div css={rankItemCss} key={index}>
+            <div
+              css={rankItemCss}
+              key={index}
+              data-user-name={user.name}
+              style={user.name === userInfo.name ? { backgroundColor: '#f4ffbc' } : {}}
+            >
               <div css={rankCss}>{index + 1}등</div>
               <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
               <div css={rankCss}>{user.name}</div>
