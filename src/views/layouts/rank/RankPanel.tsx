@@ -91,7 +91,6 @@ function RankPanel() {
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
   const changeBalance = useCoinInfoStore((state) => state.changeBalance);
   const { userInfo } = useUserInfoStore();
-  const { coinInfo } = useCoinInfoStore();
   const rankContainerRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(userInfo.name || '');
@@ -155,6 +154,8 @@ function RankPanel() {
           onChange={(e) => setName(e.target.value)}
         />
         <Select
+          showSearch
+          optionFilterProp="label"
           placeholder="학과"
           css={selectCss}
           options={departmentOption}
