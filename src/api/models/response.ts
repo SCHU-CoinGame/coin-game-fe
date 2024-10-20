@@ -39,3 +39,8 @@ export interface UserData {
   student_id: string;
   name: string;
 }
+
+export interface GetDepartmentListResponse {
+  message: string;
+  departments: string[];
+}

@@ -120,7 +120,7 @@ function RankPanel() {
   if (departmentData.data) {
     departmentOptions = [
       { label: '전체', value: 'all' },
-      ...createLabelValueArray(departmentData.data.department),
+      ...createLabelValueArray(departmentData.data.departments),
     ];
   }
 

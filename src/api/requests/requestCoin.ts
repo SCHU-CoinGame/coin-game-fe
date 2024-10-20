@@ -6,12 +6,13 @@ import {
   GET_USER_DATA_API,
   GET_DEPARTMENT_LIST_API,
 } from 'api/constant';
-import { UpbitData, Deeplearning, GetUserDataResponse } from 'api/models/response';
 import {
-  SetUserDataRequest,
+  UpbitData,
+  Deeplearning,
+  GetUserDataResponse,
   GetDepartmentListResponse,
-  GetUserDataRequest,
-} from 'api/models/request';
+} from 'api/models/response';
+import { SetUserDataRequest, GetUserDataRequest } from 'api/models/request';
 
 async function getUpbitData() {
   try {
