@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { HomeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getUserData } from 'api/requests/requestCoin';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
-import { Skeleton } from 'antd';
+import { Skeleton, Input, Select } from 'antd';
 
 const homeIconCss = css`
   position: absolute;
@@ -17,7 +17,7 @@ const homeIconCss = css`
 `;
 
 const containerCss = css`
-  width: 900px;
+  width: 1400px;
   margin: 0 auto;
   height: 100%;
   display: flex;
@@ -28,9 +28,15 @@ const containerCss = css`
 `;
 
 const titleCss = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  word-break: keep-all;
   font-size: 48px;
   font-family: 'GmarketSans-Medium';
-  margin-top: 100px;
+  margin-top: 30px;
   margin-bottom: 10px;
 `;
 
@@ -68,6 +74,17 @@ const rankCss = css`
   font-family: 'SpoqaHanSansNeo-Bold';
 `;
 
+const inputCss = css`
+  margin-left: 10px;
+  width: 200px;
+  height: 30px;
+`;
+
+const selectCss = css`
+  width: 200px;
+  height: 30px;
+`;
+
 function RankPanel() {
   const navigate = useNavigate();
   const changeUserInfo = useUserInfoStore((state) => state.changeUserInfo);
@@ -77,6 +94,9 @@ function RankPanel() {
   const { coinInfo } = useCoinInfoStore();
   const rankContainerRef = useRef<HTMLDivElement>(null);
 
+  const [name, setName] = useState(userInfo.name || '');
+  const [department, setDepartment] = useState('');
+
   const userData = useQuery({
     queryKey: ['userData'],
     queryFn: getUserData,
@@ -84,14 +104,12 @@ function RankPanel() {
 
   useEffect(() => {
     if (userData.data && rankContainerRef.current) {
-      const userRankItem = rankContainerRef.current.querySelector(
-        `[data-user-name="${userInfo.name}"]`,
-      );
+      const userRankItem = rankContainerRef.current.querySelector(`[data-user-name="${name}"]`);
       if (userRankItem) {
         userRankItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [userData.data, userInfo.name]);
+  }, [userData.data, name]);
 
   const handleHomeClick = () => {
     // 사용자 정보 초기화
@@ -118,31 +136,39 @@ function RankPanel() {
   const formatNumberWithComma = (number: number): string => {
     return new Intl.NumberFormat('en-US').format(number);
   };
-  if (userData.isLoading) {
-    return <Skeleton active />;
-  }
 
   return (
     <div css={containerCss}>
       <HomeOutlined css={homeIconCss} onClick={handleHomeClick} />
-      <div css={titleCss}>순천향대 코인왕</div>
+      <div css={titleCss}>
+        순천향대 코인왕
+        <Input
+          placeholder="이름"
+          css={inputCss}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Select placeholder="학과" css={selectCss} />
+      </div>
       {userData.isLoading || !userData.data ? (
         <Skeleton active />
       ) : (
         <div css={rankContainerCss} ref={rankContainerRef}>
-          {userData.data.data.map((user, index) => (
-            <div
-              css={rankItemCss}
-              key={index}
-              data-user-name={user.name}
-              style={user.name === userInfo.name ? { backgroundColor: '#f4ffbc' } : {}}
-            >
-              <div css={rankCss}>{index + 1}등</div>
-              <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
-              <div css={rankCss}>{user.name}</div>
-              <div css={rankCss}>{user.department}</div>
-            </div>
-          ))}
+          {userData.data.data
+            .filter((user) => user.name.includes(name))
+            .map((user, index) => (
+              <div
+                css={rankItemCss}
+                key={index}
+                data-user-name={user.name}
+                style={user.name === userInfo.name ? { backgroundColor: '#fcff9e' } : {}}
+              >
+                <div css={rankCss}>{index + 1}등</div>
+                <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
+                <div css={rankCss}>{user.name}</div>
+                <div css={rankCss}>{user.department}</div>
+              </div>
+            ))}
         </div>
       )}
     </div>
