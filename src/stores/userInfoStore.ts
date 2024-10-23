@@ -8,6 +8,7 @@ interface UserInfoState {
     student_id: string;
     nickname: string;
     reTryCount: number;
+    highScore: number;
   };
   changeUserInfo: (value: {
     name: string;
@@ -15,6 +16,7 @@ interface UserInfoState {
     student_id: string;
     nickname: string;
     reTryCount: number;
+    highScore: number;
   }) => void;
 }
 
@@ -27,6 +29,7 @@ const useUserInfoStore = create(
         student_id: '',
         nickname: '',
         reTryCount: 2,
+        highScore: 0,
       },
       changeUserInfo: (value: {
         name: string;
@@ -34,6 +37,7 @@ const useUserInfoStore = create(
         student_id: string;
         nickname: string;
         reTryCount: number;
+        highScore: number;
       }) => set({ userInfo: value }),
     }),
     {

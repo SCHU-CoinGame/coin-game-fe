@@ -320,6 +320,13 @@ const modalContentTextCss = css`
   font-family: 'SpoqaHanSansNeo-Bold';
 `;
 
+const highScoreTextCss = css`
+  font-size: 18px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+  margin-top: 5px;
+  color: #474747;
+`;
+
 const timeOverModalCss = css`
   display: flex;
   flex-direction: column;
@@ -559,7 +566,7 @@ function SelectMoneyPanel() {
       coin_1: finalCoinInfo[0].value,
       coin_2: finalCoinInfo[1].value,
       coin_3: finalCoinInfo[2].value,
-      balance: Math.round(balance),
+      balance: userInfo.highScore,
     });
     setIsFinishModalOpen(true);
   };
@@ -572,6 +579,14 @@ function SelectMoneyPanel() {
     requestSignout();
     navigate('/signin');
   };
+
+  useEffect(() => {
+    if (calcTimer === 0) {
+      if (balance > userInfo.highScore) {
+        changeUserInfo({ ...userInfo, highScore: balance });
+      }
+    }
+  }, [calcTimer]);
 
   async function processData(newData: any[]) {
     const updatedCoinInfo = finalCoinInfo.map((coin: any, index: number) => {
@@ -821,6 +836,10 @@ function SelectMoneyPanel() {
           <div css={modalTitleCss}>게임 종료!</div>
           <div css={modalContentCss(balance)}>
             <div css={modalContentTextCss}>총 잔고: {formatNumberWithComma(balance, true)} 원</div>
+            <div css={highScoreTextCss}>
+              나의 최고 점수: {formatNumberWithComma(userInfo.highScore, true)} 원 (랭킹은
+              최고점수로 등록됩니다)
+            </div>
           </div>
         </div>
       </Modal>

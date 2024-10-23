@@ -85,7 +85,7 @@ function SigninPanel() {
   const onFinish = (values: any) => {
     upbitData.mutate();
     console.log(values);
-    useUserInfoStore.getState().changeUserInfo({ ...values, reTryCount: 2 });
+    useUserInfoStore.getState().changeUserInfo({ ...values, reTryCount: 2, highScore: 0 });
     requestSignin();
     navigate('/');
   };
@@ -104,7 +104,7 @@ function SigninPanel() {
           name="department"
           rules={[{ required: true, message: '학과를 입력해주세요.' }]}
         >
-          <Input css={inputCss} placeholder="학과" />
+          <Input css={inputCss} placeholder="학과(풀네임으로 적어주세요)" />
         </Form.Item>
         <Form.Item<FieldType>
           name="student_id"

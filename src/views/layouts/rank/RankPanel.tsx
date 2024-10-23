@@ -54,10 +54,18 @@ const rankContainerCss = css`
 const rankItemCss = css`
   width: 100%;
   display: grid;
-  grid-template-columns: 2fr 5fr 3fr 5fr;
+  grid-template-columns: 2fr 4fr 3fr 3fr 5fr;
   gap: 10px;
   align-items: center;
+`;
+
+const rankTitleCss = css`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 4fr 3fr 3fr 5fr;
   gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
 `;
 
 const balanceCss = (balance: number) => css`
@@ -74,6 +82,12 @@ const rankCss = css`
   font-family: 'SpoqaHanSansNeo-Bold';
 `;
 
+const rankBigCss = css`
+  text-align: center;
+  font-size: 36px;
+  font-family: 'SpoqaHanSansNeo-Bold';
+`;
+
 const inputCss = css`
   margin-left: 10px;
   width: 200px;
@@ -83,6 +97,7 @@ const inputCss = css`
 const selectCss = css`
   width: 200px;
   height: 30px;
+  font-family: 'SpoqaHanSansNeo-Regular';
 `;
 
 const emptyBoxCss = css`
@@ -98,8 +113,15 @@ function RankPanel() {
   const { userInfo } = useUserInfoStore();
   const rankContainerRef = useRef<HTMLDivElement>(null);
 
-  const [name, setName] = useState(userInfo.name || '');
+  const [searchTerm, setSearchTerm] = useState('');
   const [department, setDepartment] = useState('all');
+
+  // useEffect를 사용하여 userInfo가 있을 때 초기 검색어 설정
+  useEffect(() => {
+    if (userInfo.name || userInfo.student_id) {
+      setSearchTerm(userInfo.student_id);
+    }
+  }, [userInfo]);
 
   function createLabelValueArray(arr: string[]) {
     return arr.map((item) => ({ label: item, value: item }));
@@ -119,19 +141,21 @@ function RankPanel() {
 
   if (departmentData.data) {
     departmentOptions = [
-      { label: '전체', value: 'all' },
+      { label: '전체 - 검색가능', value: 'all' },
       ...createLabelValueArray(departmentData.data.departments),
     ];
   }
 
   useEffect(() => {
     if (userData.data && rankContainerRef.current) {
-      const userRankItem = rankContainerRef.current.querySelector(`[data-user-name="${name}"]`);
+      const userRankItem = rankContainerRef.current.querySelector(
+        `[data-user-name="${searchTerm}"], [data-user-id="${searchTerm}"]`,
+      );
       if (userRankItem) {
         userRankItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [userData.data, name]);
+  }, [userData.data, searchTerm]);
 
   const handleHomeClick = () => {
     // 사용자 정보 초기화
@@ -141,6 +165,7 @@ function RankPanel() {
       student_id: '',
       nickname: '',
       reTryCount: 2,
+      highScore: 0,
     });
 
     // 코인 정보 초기화
@@ -168,10 +193,10 @@ function RankPanel() {
         <div css={emptyBoxCss}></div>
         순천향대 코인왕
         <Input
-          placeholder="이름"
+          placeholder="이름 또는 학번"
           css={inputCss}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Select
           showSearch
@@ -187,13 +212,22 @@ function RankPanel() {
         <Skeleton active />
       ) : (
         <div css={rankContainerCss} ref={rankContainerRef}>
+          <div css={rankTitleCss}>
+            <div css={rankBigCss}>순위</div>
+            <div css={rankBigCss}>잔액</div>
+            <div css={rankBigCss}>이름</div>
+            <div css={rankBigCss}>학번</div>
+            <div css={rankBigCss}>학과</div>
+          </div>
           {userData.data.data.map((user, index) => (
             <div
               css={rankItemCss}
               key={index}
               data-user-name={user.name}
+              data-user-id={user.student_id}
               style={
-                user.name === userInfo.name || (name.trim() !== '' && user.name.includes(name))
+                searchTerm.trim() !== '' &&
+                (user.name.includes(searchTerm) || user.student_id.includes(searchTerm))
                   ? { backgroundColor: '#fcff9e' }
                   : {}
               }
@@ -201,6 +235,7 @@ function RankPanel() {
               <div css={rankCss}>{index + 1}등</div>
               <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
               <div css={rankCss}>{user.name}</div>
+              <div css={rankCss}>{user.student_id}</div>
               <div css={rankCss}>{user.department}</div>
             </div>
           ))}

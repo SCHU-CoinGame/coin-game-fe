@@ -40,6 +40,7 @@ function MainPanel() {
       student_id: '',
       nickname: '',
       reTryCount: 2,
+      highScore: 0,
     });
 
     // 코인 정보 초기화
