@@ -620,13 +620,13 @@ function SelectMoneyPanel() {
           if (prevTradePrice !== matchingData.trade_price) {
             let newMoney;
 
-            // Decimal.js를 사용한 계산
+            // Decimal.js를 사용한 정확한 계산
             const coinMoney = new Decimal(coin.money);
             const prevTradePriceDecimal = new Decimal(prevTradePrice);
             const currentTradePriceDecimal = new Decimal(matchingData.trade_price);
 
             // 코인 수량 계산
-            const coinAmount = coinMoney.dividedBy(prevTradePriceDecimal).floor();
+            const coinAmount = coinMoney.dividedBy(prevTradePriceDecimal);
 
             if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
               const priceDifference = currentTradePriceDecimal.minus(prevTradePriceDecimal);
@@ -636,7 +636,7 @@ function SelectMoneyPanel() {
             }
 
             // 음수 방지
-            newMoney = Decimal.max(newMoney, new Decimal(0));
+            newMoney = Decimal.max(newMoney, 0);
 
             setPreviousTradePrices((prevTradePrices: any) => ({
               ...prevTradePrices,
@@ -659,7 +659,9 @@ function SelectMoneyPanel() {
     console.log('값 변경!', updatedCoinInfo);
 
     setFinalCoinInfo(updatedCoinInfo);
-    setBalance(updatedCoinInfo.reduce((sum, coin) => sum + coin.money, 0));
+    setBalance(
+      updatedCoinInfo.reduce((sum, coin) => new Decimal(sum).plus(coin.money).toNumber(), 0),
+    );
   }
 
   const formatNumberWithComma = (number: number, rounded: boolean): string => {
