@@ -612,44 +612,38 @@ function SelectMoneyPanel() {
           }));
         }
 
-        const prevTradePrice = previousTradePrices[matchingData.code];
-        console.log('이전 거래 가격', prevTradePrice);
-        console.log('현재 거래 가격', matchingData.trade_price);
+        const initialPrice = initialTradePrices[matchingData.code];
+        const currentPrice = matchingData.trade_price;
 
-        if (prevTradePrice) {
-          if (prevTradePrice !== matchingData.trade_price) {
-            let newMoney;
+        if (initialPrice) {
+          // 가격 변동 비율 계산
+          const priceRatio = new Decimal(currentPrice).dividedBy(initialPrice);
 
-            // Decimal.js를 사용한 정확한 계산
-            const coinMoney = new Decimal(coin.money);
-            const prevTradePriceDecimal = new Decimal(prevTradePrice);
-            const currentTradePriceDecimal = new Decimal(matchingData.trade_price);
+          // 초기 투자금
+          const initialInvestment = new Decimal(transformMoneyData(selectedAmounts[index]));
 
-            // 코인 수량 계산
-            const coinAmount = coinMoney.dividedBy(prevTradePriceDecimal);
+          // 새로운 자산 가치 계산
+          let newMoney = initialInvestment.times(priceRatio);
 
-            if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
-              const priceDifference = currentTradePriceDecimal.minus(prevTradePriceDecimal);
-              newMoney = coinMoney.plus(coinAmount.times(priceDifference).times(selectedLeverage));
-            } else {
-              newMoney = coinMoney;
-            }
-
-            // 음수 방지
-            newMoney = Decimal.max(newMoney, 0);
-
-            setPreviousTradePrices((prevTradePrices: any) => ({
-              ...prevTradePrices,
-              [matchingData.code]: matchingData.trade_price,
-            }));
-
-            return { ...coin, money: newMoney.toNumber() };
+          // 레버리지 적용
+          if (priceRatio.greaterThan(1)) {
+            // 가격이 올랐을 때
+            const gain = newMoney.minus(initialInvestment);
+            newMoney = initialInvestment.plus(gain.times(selectedLeverage));
+          } else if (priceRatio.lessThan(1)) {
+            // 가격이 내렸을 때
+            const loss = initialInvestment.minus(newMoney);
+            newMoney = initialInvestment.minus(loss.times(selectedLeverage));
           }
-        } else {
-          setPreviousTradePrices((prevTradePrices: any) => ({
-            ...prevTradePrices,
-            [matchingData.code]: matchingData.trade_price,
-          }));
+
+          // 음수 방지
+          newMoney = Decimal.max(newMoney, 0);
+
+          console.log(
+            `${coin.value} 초기가: ${initialPrice}, 현재가: ${currentPrice}, 변동비율: ${priceRatio}, 새 자산: ${newMoney}`,
+          );
+
+          return { ...coin, money: newMoney.toNumber() };
         }
       }
 
