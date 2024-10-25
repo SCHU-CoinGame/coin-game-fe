@@ -591,7 +591,7 @@ function SelectMoneyPanel() {
 
   async function processData(newData: any[]) {
     const updatedCoinInfo = finalCoinInfo.map((coin: any, index: number) => {
-      if (cellStates[index]) {
+      if (cellStates[index] || coin.money === 0) {
         return coin;
       }
 
@@ -636,8 +636,11 @@ function SelectMoneyPanel() {
             newMoney = initialInvestment.minus(loss.times(selectedLeverage));
           }
 
-          // 음수 방지
+          // 음수 방지 및 0 유지
           newMoney = Decimal.max(newMoney, 0);
+          if (newMoney.toNumber() === 0) {
+            return { ...coin, money: 0 };
+          }
 
           console.log(
             `${coin.value} 초기가: ${initialPrice}, 현재가: ${currentPrice}, 변동비율: ${priceRatio}, 새 자산: ${newMoney}`,
