@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button, Tag, Modal } from 'antd';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { colorLight } from 'styles/colors';
@@ -10,7 +10,6 @@ import { useCoinListStore, useDeeplearningRankStore } from 'stores/userInfoStore
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
 import { HintTag } from 'views/components/HintTag';
-import { Deeplearning } from 'api/models/response';
 
 const containerCss = css`
   width: 100%;
@@ -231,7 +230,6 @@ const modalOkBtnCss = css`
 `;
 
 function SelectCoinPanel() {
-  const [aiRank, setAiRank] = useState<string[]>([]);
   const { data: deeplearningData } = useQuery({
     queryKey: ['deeplearningData'],
     queryFn: getDeeplearningData,
@@ -258,6 +256,8 @@ function SelectCoinPanel() {
   const [timeLeft, setTimeLeft] = useState(25);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
+  const gameTimerRef = useRef<number | null>(null);
+  const [isGameTimerRunning, setIsGameTimerRunning] = useState(true);
 
   const handleTimeOver = () => {
     if (selectedCoins.length < 2) {
@@ -265,6 +265,14 @@ function SelectCoinPanel() {
       setIsTimeOverModalOpen(true);
     } else {
       setIsModalOpen(true);
+    }
+  };
+
+  // 게임 타이머를 중지하는 함수
+  const stopGameTimer = () => {
+    if (gameTimerRef.current) {
+      clearInterval(gameTimerRef.current);
+      gameTimerRef.current = null;
     }
   };
 
@@ -277,12 +285,11 @@ function SelectCoinPanel() {
       clearInterval(loadingTimer);
     }, 5000);
 
-    const gameTimer = setInterval(() => {
+    gameTimerRef.current = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
-          clearInterval(gameTimer);
+          stopGameTimer();
           handleTimeOver();
-
           return 0;
         }
         return prevTime - 1;
@@ -291,7 +298,7 @@ function SelectCoinPanel() {
 
     return () => {
       clearInterval(loadingTimer);
-      clearInterval(gameTimer);
+      stopGameTimer();
     };
   }, []);
 
@@ -329,6 +336,8 @@ function SelectCoinPanel() {
   // 다음 버튼 클릭 함수
   const handleNextClick = () => {
     if (isMaxSelected) {
+      setIsGameTimerRunning(false);
+      stopGameTimer();
       setIsModalOpen(true);
     }
   };
@@ -347,7 +356,7 @@ function SelectCoinPanel() {
           아홉 개의 비트코인 종목 중에서, 가장 유망해 보이는 세 개의 그래프를 골라주세요
         </div>
         <div css={progressBoxCss}>
-          <div css={progressCss(countdown)}></div>
+          {isGameTimerRunning && <div css={progressCss(countdown)}></div>}
         </div>
         <div css={chartContainerCss}>
           {coins.map((coin, index) => {
