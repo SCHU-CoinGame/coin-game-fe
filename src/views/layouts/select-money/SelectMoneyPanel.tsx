@@ -11,6 +11,7 @@ import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
 import { useNavigate } from 'react-router-dom';
 import { setUserData } from 'api/requests/requestCoin';
 import { requestSignout } from 'api/requests/requestAuth';
+import Decimal from 'decimal.js';
 
 const containerCss = css`
   width: 100%;
@@ -619,30 +620,30 @@ function SelectMoneyPanel() {
           if (prevTradePrice !== matchingData.trade_price) {
             let newMoney;
 
-            // 정수 기반 계산을 위해 원 단위로 변환
-            const coinMoneyInWon = Math.round(coin.money * 100);
-            const prevTradePriceInWon = Math.round(prevTradePrice * 100);
-            const currentTradePriceInWon = Math.round(matchingData.trade_price * 100);
+            // Decimal.js를 사용한 계산
+            const coinMoney = new Decimal(coin.money);
+            const prevTradePriceDecimal = new Decimal(prevTradePrice);
+            const currentTradePriceDecimal = new Decimal(matchingData.trade_price);
 
-            // 코인 수량 계산 (정수 나눗셈)
-            const coinAmount = Math.floor(coinMoneyInWon / prevTradePriceInWon);
+            // 코인 수량 계산
+            const coinAmount = coinMoney.dividedBy(prevTradePriceDecimal).floor();
 
             if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
-              const priceDifference = currentTradePriceInWon - prevTradePriceInWon;
-              newMoney = coinMoneyInWon + coinAmount * priceDifference * selectedLeverage;
+              const priceDifference = currentTradePriceDecimal.minus(prevTradePriceDecimal);
+              newMoney = coinMoney.plus(coinAmount.times(priceDifference).times(selectedLeverage));
             } else {
-              newMoney = coinMoneyInWon;
+              newMoney = coinMoney;
             }
 
-            // 원 단위에서 다시 변환
-            newMoney = Math.max(newMoney / 100, 0);
+            // 음수 방지
+            newMoney = Decimal.max(newMoney, new Decimal(0));
 
             setPreviousTradePrices((prevTradePrices: any) => ({
               ...prevTradePrices,
               [matchingData.code]: matchingData.trade_price,
             }));
 
-            return { ...coin, money: newMoney };
+            return { ...coin, money: newMoney.toNumber() };
           }
         } else {
           setPreviousTradePrices((prevTradePrices: any) => ({
