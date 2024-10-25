@@ -12,6 +12,11 @@ import { useNavigate } from 'react-router-dom';
 import { setUserData } from 'api/requests/requestCoin';
 import { requestSignout } from 'api/requests/requestAuth';
 import Decimal from 'decimal.js';
+import buySound from '/assets/buy.wav';
+import sellSound from '/assets/sell.wav';
+
+const buyAudio = new Audio(buySound);
+const sellAudio = new Audio(sellSound);
 
 const containerCss = css`
   width: 100%;
@@ -396,6 +401,8 @@ function SelectMoneyPanel() {
     coinInfo: state.coinInfo,
   }));
 
+  const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
+  const changeBalance = useCoinInfoStore((state) => state.changeBalance);
   const { userInfo, changeUserInfo } = useUserInfoStore((state) => ({
     userInfo: state.userInfo,
     changeUserInfo: state.changeUserInfo,
@@ -488,6 +495,7 @@ function SelectMoneyPanel() {
   const isAllSelected = selectedAmounts.every((amount) => amount !== '');
 
   const handleNextClick = () => {
+    buyAudio.play();
     setIsTimeOverModalOpen(false);
     stopGameTimer();
     if (isAllSelected) {
@@ -577,6 +585,24 @@ function SelectMoneyPanel() {
   };
 
   const handleHomeClick = () => {
+    changeUserInfo({
+      name: '',
+      department: '',
+      student_id: '',
+      nickname: '',
+      reTryCount: 2,
+      highScore: 0,
+    });
+
+    // 코인 정보 초기화
+    changeCoinInfo({
+      coin_1: { value: '', label: '' },
+      coin_2: { value: '', label: '' },
+      coin_3: { value: '', label: '' },
+    });
+
+    // 잔액 초기화
+    changeBalance(0);
     requestSignout();
     navigate('/signin');
   };
@@ -643,6 +669,7 @@ function SelectMoneyPanel() {
               const newStates = [...prevStates];
               newStates[index] = true;
 
+              sellAudio.play();
               // 모든 셀이 체결되었는지 확인
               if (newStates.every((state) => state)) {
                 stopGameTimer();
@@ -693,6 +720,7 @@ function SelectMoneyPanel() {
       const newStates = [...prevStates];
       newStates[index] = true;
 
+      sellAudio.play();
       // 모든 셀이 체결되었는지 확인
       if (newStates.every((state) => state)) {
         stopGameTimer();

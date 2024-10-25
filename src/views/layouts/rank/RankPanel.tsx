@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { css } from '@emotion/react';
-import { HomeOutlined } from '@ant-design/icons';
+import { HomeOutlined, CrownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getUserData, getDepartmentData } from 'api/requests/requestCoin';
@@ -80,6 +80,11 @@ const rankCss = css`
   text-align: center;
   font-size: 32px;
   font-family: 'SpoqaHanSansNeo-Bold';
+`;
+
+const firstPlaceCss = css`
+  ${rankCss}
+  font-size: 40px;
 `;
 
 const rankBigCss = css`
@@ -232,11 +237,14 @@ function RankPanel() {
                   : {}
               }
             >
-              <div css={rankCss}>{index + 1}등</div>
+              <div css={index === 0 ? firstPlaceCss : rankCss}>
+                {index + 1}등{' '}
+                {index === 0 && <CrownOutlined style={{ fontSize: '40px', color: '#ffea31' }} />}
+              </div>
               <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
-              <div css={rankCss}>{user.name}</div>
-              <div css={rankCss}>{user.student_id}</div>
-              <div css={rankCss}>{user.department}</div>
+              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.name}</div>
+              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.student_id}</div>
+              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.department}</div>
             </div>
           ))}
         </div>
