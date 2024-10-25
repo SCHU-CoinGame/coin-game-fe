@@ -612,37 +612,44 @@ function SelectMoneyPanel() {
           }));
         }
 
-        const initialTradePrice = initialTradePrices[matchingData.code];
-        console.log('초기 거래 가격', initialTradePrice);
+        const prevTradePrice = previousTradePrices[matchingData.code];
+        console.log('이전 거래 가격', prevTradePrice);
         console.log('현재 거래 가격', matchingData.trade_price);
 
-        if (initialTradePrice) {
-          // 변동 비율을 통한 자산 계산
-          const initialPriceDecimal = new Decimal(initialTradePrice);
-          const currentPriceDecimal = new Decimal(matchingData.trade_price);
+        if (prevTradePrice) {
+          if (prevTradePrice !== matchingData.trade_price) {
+            let newMoney;
 
-          const priceChangeRatio = currentPriceDecimal.dividedBy(initialPriceDecimal);
+            // Decimal.js를 사용한 정확한 계산
+            const coinMoney = new Decimal(coin.money);
+            const prevTradePriceDecimal = new Decimal(prevTradePrice);
+            const currentTradePriceDecimal = new Decimal(matchingData.trade_price);
 
-          let newMoney;
-          if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
-            // 변동 비율을 기반으로 자산 계산 (레버리지 적용)
-            newMoney = new Decimal(coin.initialMoney)
-              .times(priceChangeRatio)
-              .times(selectedLeverage);
-          } else {
-            newMoney = new Decimal(coin.initialMoney); // 가격 변화가 없으면 초기 자산 유지
+            // 코인 수량 계산
+            const coinAmount = coinMoney.dividedBy(prevTradePriceDecimal);
+
+            if (matchingData.change === 'RISE' || matchingData.change === 'FALL') {
+              const priceDifference = currentTradePriceDecimal.minus(prevTradePriceDecimal);
+              newMoney = coinMoney.plus(coinAmount.times(priceDifference).times(selectedLeverage));
+            } else {
+              newMoney = coinMoney;
+            }
+
+            // 음수 방지
+            newMoney = Decimal.max(newMoney, 0);
+
+            setPreviousTradePrices((prevTradePrices: any) => ({
+              ...prevTradePrices,
+              [matchingData.code]: matchingData.trade_price,
+            }));
+
+            return { ...coin, money: newMoney.toNumber() };
           }
-
-          // 음수 방지
-          newMoney = Decimal.max(newMoney, 0);
-
-          // 이전 거래 가격 업데이트
+        } else {
           setPreviousTradePrices((prevTradePrices: any) => ({
             ...prevTradePrices,
             [matchingData.code]: matchingData.trade_price,
           }));
-
-          return { ...coin, money: newMoney.toNumber() };
         }
       }
 
