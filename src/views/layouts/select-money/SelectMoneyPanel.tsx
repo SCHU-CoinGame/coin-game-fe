@@ -639,6 +639,18 @@ function SelectMoneyPanel() {
           // 음수 방지 및 0 유지
           newMoney = Decimal.max(newMoney, 0);
           if (newMoney.toNumber() === 0) {
+            setCellStates((prevStates) => {
+              const newStates = [...prevStates];
+              newStates[index] = true;
+
+              // 모든 셀이 체결되었는지 확인
+              if (newStates.every((state) => state)) {
+                stopGameTimer();
+                stopGetCoinInfo(); // getCoinInfo 중지
+              }
+
+              return newStates;
+            });
             return { ...coin, money: 0 };
           }
 
@@ -712,9 +724,15 @@ function SelectMoneyPanel() {
           <div css={nowPriceContainerCss(isGameStart)}>
             {finalCoinInfo.map((coin, index) => (
               <span key={index} css={nowPriceTextCss}>
-                나의 체결가: {formatNumberWithComma(initialTradePrices[coin.value] || 0, false)}
+                나의 체결가:{' '}
+                {initialTradePrices[coin.value] < 1
+                  ? initialTradePrices[coin.value]
+                  : formatNumberWithComma(initialTradePrices[coin.value] || 0, false)}
                 <br />
-                실시간 현재가: {formatNumberWithComma(currentTradePrices[coin.value] || 0, false)}
+                실시간 현재가:{' '}
+                {currentTradePrices[coin.value] < 1
+                  ? currentTradePrices[coin.value]
+                  : formatNumberWithComma(currentTradePrices[coin.value] || 0, false)}
               </span>
             ))}
           </div>
