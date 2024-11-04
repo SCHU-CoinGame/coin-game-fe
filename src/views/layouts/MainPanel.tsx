@@ -3,6 +3,7 @@ import { HomeOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
+import { useEffect } from 'react';
 
 const containerCss = css`
   display: flex;
@@ -27,11 +28,11 @@ const contentCss = css`
 `;
 
 function MainPanel() {
-  const navigate = useNavigate();
   const changeUserInfo = useUserInfoStore((state) => state.changeUserInfo);
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
   const changeBalance = useCoinInfoStore((state) => state.changeBalance);
 
+  const navigate = useNavigate();
   const handleHomeClick = () => {
     // 사용자 정보 초기화
     changeUserInfo({

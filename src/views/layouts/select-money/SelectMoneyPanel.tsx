@@ -14,6 +14,7 @@ import { requestSignout } from 'api/requests/requestAuth';
 import Decimal from 'decimal.js';
 import buySound from '/assets/buy.wav';
 import sellSound from '/assets/sell.wav';
+import { usePreventNavigation } from 'hooks/UsePreventNavigation';
 
 const buyAudio = new Audio(buySound);
 const sellAudio = new Audio(sellSound);
@@ -383,6 +384,8 @@ function SelectMoneyPanel() {
   const [cellStates, setCellStates] = useState<boolean[]>([false, false, false]);
   const [initialTradePrices, setInitialTradePrices] = useState<{ [key: string]: number }>({});
   const [currentTradePrices, setCurrentTradePrices] = useState<{ [key: string]: number }>({});
+
+  usePreventNavigation({ when: true });
 
   const navigate = useNavigate();
   const upbitData = useMutation({

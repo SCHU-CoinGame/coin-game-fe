@@ -5,6 +5,7 @@ import { Button } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { HintTag } from 'views/components/HintTag';
+import { usePreventNavigation } from 'hooks/UsePreventNavigation';
 
 const containerCss = css`
   width: 100%;
@@ -62,6 +63,7 @@ const hintTextCss = css`
 
 function HomePanel() {
   const navigate = useNavigate();
+  usePreventNavigation({ when: true });
 
   const [tutorialIdx, setTutorialIdx] = useState(0);
   const tutorial = [

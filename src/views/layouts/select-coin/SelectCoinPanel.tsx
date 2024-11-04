@@ -10,6 +10,7 @@ import { useCoinListStore, useDeeplearningRankStore } from 'stores/userInfoStore
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
 import { HintTag } from 'views/components/HintTag';
+import { usePreventNavigation } from 'hooks/UsePreventNavigation';
 
 const containerCss = css`
   width: 100%;
@@ -230,6 +231,7 @@ const modalOkBtnCss = css`
 `;
 
 function SelectCoinPanel() {
+  usePreventNavigation({ when: true });
   const { data: deeplearningData } = useQuery({
     queryKey: ['deeplearningData'],
     queryFn: getDeeplearningData,
