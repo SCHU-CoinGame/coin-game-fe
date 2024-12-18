@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import { HomeOutlined, CrownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getUserData, getDepartmentData } from 'api/requests/requestCoin';
+import { getUserData, getAffiliationData } from 'api/requests/requestCoin';
 import { useUserInfoStore, useCoinInfoStore } from 'stores/userInfoStore';
 import { requestSignout } from 'api/requests/requestAuth';
 import { Skeleton, Input, Select } from 'antd';
@@ -119,12 +119,12 @@ function RankPanel() {
   const rankContainerRef = useRef<HTMLDivElement>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [department, setDepartment] = useState('all');
+  const [affiliation, setAffiliation] = useState('all');
 
   // useEffect를 사용하여 userInfo가 있을 때 초기 검색어 설정
   useEffect(() => {
-    if (userInfo.name || userInfo.student_id) {
-      setSearchTerm(userInfo.student_id);
+    if (userInfo.name || userInfo.affiliation) {
+      setSearchTerm(userInfo.affiliation);
     }
   }, [userInfo]);
 
@@ -133,21 +133,21 @@ function RankPanel() {
   }
 
   const userData = useQuery({
-    queryKey: ['userData', department],
-    queryFn: () => getUserData({ department: department }),
+    queryKey: ['userData', affiliation],
+    queryFn: () => getUserData({ affiliation: affiliation }),
   });
 
-  const departmentData = useQuery({
-    queryKey: ['departmentData'],
-    queryFn: () => getDepartmentData(),
+  const affiliationData = useQuery({
+    queryKey: ['affiliationData'],
+    queryFn: () => getAffiliationData(),
   });
 
-  let departmentOptions: { label: string; value: string }[] = [];
+  let affiliationOptions: { label: string; value: string }[] = [];
 
-  if (departmentData.data) {
-    departmentOptions = [
+  if (affiliationData.data) {
+    affiliationOptions = [
       { label: '전체 - 검색가능', value: 'all' },
-      ...createLabelValueArray(departmentData.data.departments),
+      ...createLabelValueArray(affiliationData.data.affiliation),
     ];
   }
 
@@ -166,8 +166,7 @@ function RankPanel() {
     // 사용자 정보 초기화
     changeUserInfo({
       name: '',
-      department: '',
-      student_id: '',
+      affiliation: '',
       nickname: '',
       reTryCount: 2,
       highScore: 0,
@@ -208,9 +207,9 @@ function RankPanel() {
           optionFilterProp="label"
           placeholder="학과"
           css={selectCss}
-          options={departmentOptions}
-          value={department}
-          onChange={(value) => setDepartment(value)}
+          options={affiliationOptions}
+          value={affiliation}
+          onChange={(value) => setAffiliation(value)}
         />
       </div>
       {userData.isLoading || !userData.data ? (
@@ -229,10 +228,10 @@ function RankPanel() {
               css={rankItemCss}
               key={index}
               data-user-name={user.name}
-              data-user-id={user.student_id}
+              data-user-id={user.affiliation}
               style={
                 searchTerm.trim() !== '' &&
-                (user.name.includes(searchTerm) || user.student_id.includes(searchTerm))
+                (user.name.includes(searchTerm) || user.affiliation.includes(searchTerm))
                   ? { backgroundColor: '#fcff9e' }
                   : {}
               }
@@ -243,8 +242,7 @@ function RankPanel() {
               </div>
               <div css={balanceCss(user.balance)}>{formatNumberWithComma(user.balance)}</div>
               <div css={index === 0 ? firstPlaceCss : rankCss}>{user.name}</div>
-              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.student_id}</div>
-              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.department}</div>
+              <div css={index === 0 ? firstPlaceCss : rankCss}>{user.affiliation}</div>
             </div>
           ))}
         </div>

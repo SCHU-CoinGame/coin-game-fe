@@ -37,8 +37,7 @@ function MainPanel() {
     // 사용자 정보 초기화
     changeUserInfo({
       name: '',
-      department: '',
-      student_id: '',
+      affiliation: '',
       nickname: '',
       reTryCount: 2,
       highScore: 0,

@@ -6,12 +6,16 @@ import { colorLight } from 'styles/colors';
 import { useCoinInfoStore } from 'stores/userInfoStore';
 import { useNavigate } from 'react-router-dom';
 import { Overlay } from 'views/layouts/Overlay';
-import { useCoinListStore, useDeeplearningRankStore } from 'stores/userInfoStore';
+import {
+  useCoinListStore,
+  useDeeplearningRankStore,
+  useUserClickStreamStore,
+} from 'stores/userInfoStore';
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
 import { HintTag } from 'views/components/HintTag';
+import { ConvertSlashToDash } from 'views/CoinConverter';
 import { usePreventNavigation } from 'hooks/UsePreventNavigation';
-
 const containerCss = css`
   width: 100%;
   height: 100%;
@@ -236,6 +240,120 @@ function SelectCoinPanel() {
     queryKey: ['deeplearningData'],
     queryFn: getDeeplearningData,
   });
+  // sampleData
+  // const deeplearningData = [
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-BTC',
+  //     largest_spike: false,
+  //     fastest_growth: true,
+  //     most_volatile: true,
+  //     percentage: 1.3158182310168738,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 1,
+  //   },
+  //   {
+  //     largest_rise: true,
+  //     code: 'KRW-ETH',
+  //     largest_spike: true,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: 0.5329839511852842,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 2,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-DOGE',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: 0.3970638917366956,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 3,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-BIGTIME',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: 0.228743978066023,
+  //     largest_drop: true,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 4,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-SUI',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: 0.21710651676829268,
+  //     largest_drop: false,
+  //     fastest_decline: true,
+  //     least_volatile: true,
+  //     rank: 5,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-UXLINK',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: -0.23176080935838586,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 8,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-SOL',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: -1.1058837431903856,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 9,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-XRP',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: -0.06528614939452285,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 7,
+  //   },
+  //   {
+  //     largest_rise: false,
+  //     code: 'KRW-SXP',
+  //     largest_spike: false,
+  //     fastest_growth: false,
+  //     most_volatile: false,
+  //     percentage: -0.043716566921964184,
+  //     largest_drop: false,
+  //     fastest_decline: false,
+  //     least_volatile: false,
+  //     rank: 6,
+  //   },
+  // ];
+
+  const { updateRemainingTime, updateCoins, updateAiRecommend, updateDeeplearningData } =
+    useUserClickStreamStore();
 
   const changeDeeplearningRank = useDeeplearningRankStore((state) => state.changeDeeplearningRank);
 
@@ -249,6 +367,11 @@ function SelectCoinPanel() {
     return indices.map((index) => data[index]?.rank);
   };
 
+  // 선택한 종목의 딥러닝 데이터를 가져오는 함수
+  const getSelectedCoinData = (deeplearningData: any[], selectedCodes: string[]): any[] => {
+    return deeplearningData.filter((item) => selectedCodes.includes(item.code));
+  };
+
   const navigate = useNavigate();
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
   const coins = useCoinListStore((state) => state.coinList);
@@ -260,6 +383,7 @@ function SelectCoinPanel() {
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const gameTimerRef = useRef<number | null>(null);
   const [isGameTimerRunning, setIsGameTimerRunning] = useState(true);
+  const [isClickAiRecommend, setIsClickAiRecommend] = useState(false);
 
   const handleTimeOver = () => {
     if (selectedCoins.length < 2) {
@@ -322,6 +446,24 @@ function SelectCoinPanel() {
 
   //modal 상태관리
   const handleOk = () => {
+    console.log('남은시간: ', timeLeft);
+    updateRemainingTime(1, timeLeft);
+
+    const selectedLabels = [
+      ConvertSlashToDash(coins[selectedCoins[0]].value),
+      ConvertSlashToDash(coins[selectedCoins[1]].value),
+      ConvertSlashToDash(coins[selectedCoins[2]].value),
+    ];
+    console.log('선택한 종목: ', selectedLabels);
+    updateCoins(selectedLabels);
+
+    const selectedCoinData = getSelectedCoinData(deeplearningData || [], selectedLabels);
+    console.log('선택한 종목의 딥러닝 데이터: ', selectedCoinData);
+    updateDeeplearningData(selectedCoinData);
+
+    console.log('AI 추천 클릭 여부: ', isClickAiRecommend);
+    updateAiRecommend(1, isClickAiRecommend);
+
     if (deeplearningData) {
       changeDeeplearningRank(getRanksByIndices(deeplearningData, selectedCoins));
     }
@@ -345,6 +487,7 @@ function SelectCoinPanel() {
   };
 
   const handleRecommendClick = () => {
+    setIsClickAiRecommend(true);
     if (deeplearningData) {
       setSelectedCoins(getIndicesByRank(deeplearningData));
     }

@@ -4,13 +4,13 @@ import {
   DEEPLEARNING_API,
   SET_USER_DATA_API,
   GET_USER_DATA_API,
-  GET_DEPARTMENT_LIST_API,
+  GET_AFFILIATION_LIST_API,
 } from 'api/constant';
 import {
   UpbitData,
   Deeplearning,
   GetUserDataResponse,
-  GetDepartmentListResponse,
+  GetAffiliationListResponse,
 } from 'api/models/response';
 import { SetUserDataRequest, GetUserDataRequest } from 'api/models/request';
 
@@ -54,9 +54,9 @@ async function getUserData(data: GetUserDataRequest) {
   }
 }
 
-async function getDepartmentData() {
+async function getAffiliationData() {
   try {
-    const res = await coinApi.get<GetDepartmentListResponse>(GET_DEPARTMENT_LIST_API);
+    const res = await coinApi.get<GetAffiliationListResponse>(GET_AFFILIATION_LIST_API);
     if (res.status !== 200) throw new Error(`Unexpected status code: ${res.status}`);
     return res.data;
   } catch (error) {
@@ -64,4 +64,4 @@ async function getDepartmentData() {
   }
 }
 
-export { getUpbitData, getDeeplearningData, setUserData, getUserData, getDepartmentData };
+export { getUpbitData, getDeeplearningData, setUserData, getUserData, getAffiliationData };

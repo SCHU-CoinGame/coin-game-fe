@@ -3,7 +3,12 @@ import { css } from '@emotion/react';
 import { Button, Radio, Modal } from 'antd';
 import { useState, useEffect, useRef } from 'react';
 import { colorLight } from 'styles/colors';
-import { useCoinInfoStore, useUserInfoStore, useDeeplearningRankStore } from 'stores/userInfoStore';
+import {
+  useCoinInfoStore,
+  useUserInfoStore,
+  useDeeplearningRankStore,
+  useUserClickStreamStore,
+} from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { useMutation } from '@tanstack/react-query';
@@ -11,6 +16,7 @@ import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
 import { useNavigate } from 'react-router-dom';
 import { setUserData } from 'api/requests/requestCoin';
 import { requestSignout } from 'api/requests/requestAuth';
+import { setClickStream } from 'api/requests/requestUserData';
 import Decimal from 'decimal.js';
 import buySound from '/assets/buy.wav';
 import sellSound from '/assets/sell.wav';
@@ -385,6 +391,16 @@ function SelectMoneyPanel() {
   const [initialTradePrices, setInitialTradePrices] = useState<{ [key: string]: number }>({});
   const [currentTradePrices, setCurrentTradePrices] = useState<{ [key: string]: number }>({});
 
+  const {
+    updateRemainingTime,
+    updateAiRecommend,
+    updateUserSellTime,
+    updateUserBuyCoinMoney,
+    updateLeverage,
+    updateBalance,
+  } = useUserClickStreamStore();
+
+  const state = useUserClickStreamStore();
   usePreventNavigation({ when: true });
 
   const navigate = useNavigate();
@@ -400,6 +416,7 @@ function SelectMoneyPanel() {
     },
     onMutate: () => {},
   });
+
   const { coinInfo } = useCoinInfoStore((state) => ({
     coinInfo: state.coinInfo,
   }));
@@ -421,6 +438,24 @@ function SelectMoneyPanel() {
     },
   });
 
+  const clickStream = useMutation({
+    mutationFn: async () => {
+      const res = await setClickStream({
+        userName: userInfo.name,
+        userAffiliation: userInfo.affiliation,
+        userNickname: userInfo.nickname,
+        ...state,
+        balance: balance,
+      });
+    },
+    onSuccess: () => {
+      console.log('성공');
+    },
+    onError: () => {
+      console.log('error');
+    },
+  });
+
   function assignValuesByOrder(arr: number[]): string[] {
     const valueMap = ['10', '5', '1']; // 낮은 순서에 맞춰 값 할당
     const sortedIndices = [...arr].sort((a, b) => a - b); // 배열을 오름차순으로 정렬
@@ -435,6 +470,7 @@ function SelectMoneyPanel() {
   const [timeLeft, setTimeLeft] = useState(25);
   const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
+  const [isClickAiRecommend, setIsClickAiRecommend] = useState(false);
 
   const handleTimeOver = () => {
     setSelectedAmounts(['10', '5', '1']);
@@ -498,6 +534,28 @@ function SelectMoneyPanel() {
   const isAllSelected = selectedAmounts.every((amount) => amount !== '');
 
   const handleNextClick = () => {
+    const numbers = [1, 2, 3];
+    const values = numbers.map((num) => getCoinValueByNumber(coinInfo, num));
+    console.log(values[0], '에 투자한 돈: ', selectedAmounts[0]);
+    console.log(values[1], '에 투자한 돈: ', selectedAmounts[1]);
+    console.log(values[2], '에 투자한 돈: ', selectedAmounts[2]);
+    updateUserBuyCoinMoney(1, { coin: values[0], money: transformMoneyData(selectedAmounts[0]) });
+    updateUserBuyCoinMoney(2, { coin: values[1], money: transformMoneyData(selectedAmounts[1]) });
+    updateUserBuyCoinMoney(3, { coin: values[2], money: transformMoneyData(selectedAmounts[2]) });
+
+    console.log('남은시간: ', timeLeft);
+    updateRemainingTime(2, timeLeft);
+
+    console.log('ai 추천 여부: ', isClickAiRecommend);
+    updateAiRecommend(2, isClickAiRecommend);
+
+    console.log('레버리지: ', selectedLeverage);
+    updateLeverage(selectedLeverage);
+
+    updateUserSellTime(1, { coin: values[0], time: 0 });
+    updateUserSellTime(2, { coin: values[1], time: 0 });
+    updateUserSellTime(3, { coin: values[2], time: 0 });
+
     buyAudio.play();
     setIsTimeOverModalOpen(false);
     stopGameTimer();
@@ -565,15 +623,20 @@ function SelectMoneyPanel() {
       abortController.abort();
     }
     setTimeout(() => {
+      console.log('매도 남은시간: ', calcTimer);
+      updateRemainingTime(3, calcTimer);
+
+      // 보류
+      updateBalance(balance);
+
       setCalcTimer(0);
     }, 300);
   };
 
   const handleGameEndClick = () => {
     userResultData.mutate({
-      student_id: userInfo.student_id,
+      affiliation: userInfo.affiliation,
       name: userInfo.name,
-      department: userInfo.department,
       nickname: userInfo.nickname,
       coin_1: finalCoinInfo[0].value,
       coin_2: finalCoinInfo[1].value,
@@ -590,8 +653,7 @@ function SelectMoneyPanel() {
   const handleHomeClick = () => {
     changeUserInfo({
       name: '',
-      department: '',
-      student_id: '',
+      affiliation: '',
       nickname: '',
       reTryCount: 2,
       highScore: 0,
@@ -615,6 +677,8 @@ function SelectMoneyPanel() {
       if (balance > userInfo.highScore) {
         changeUserInfo({ ...userInfo, highScore: balance });
       }
+      setBalance(balance);
+      clickStream.mutate();
     }
   }, [calcTimer]);
 
@@ -712,6 +776,7 @@ function SelectMoneyPanel() {
   };
 
   const handleRecommendClick = () => {
+    setIsClickAiRecommend(true);
     const indices = assignValuesByOrder(deeplearningRank);
     console.log(deeplearningRank);
     console.log(indices);
@@ -719,6 +784,11 @@ function SelectMoneyPanel() {
   };
 
   const handleCellClick = (index: number) => {
+    const coinNum = index + 1;
+    const coinValue = getCoinValueByNumber(coinInfo, coinNum);
+    console.log(coinValue, '의 매도 시간(남은 시간): ', calcTimer);
+    updateUserSellTime(coinNum as 1 | 2 | 3, { coin: coinValue, time: calcTimer });
+
     setCellStates((prevStates) => {
       const newStates = [...prevStates];
       newStates[index] = true;
@@ -732,6 +802,12 @@ function SelectMoneyPanel() {
 
       return newStates;
     });
+  };
+
+  // 코인 순서로 이름 찾기
+  const getCoinValueByNumber = (coinInfo: any, number: number): string => {
+    const coinKey = `coin_${number}` as keyof typeof coinInfo;
+    return coinInfo[coinKey].value;
   };
 
   const handleReTryClick = () => {

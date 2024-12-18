@@ -30,17 +30,16 @@ export interface GetUserDataResponse {
 }
 
 export interface UserData {
-  department: string;
+  affiliation: string;
   balance: number;
   nickname: string;
   coin_3: string;
   coin_2: string;
   coin_1: string;
-  student_id: string;
   name: string;
 }
 
-export interface GetDepartmentListResponse {
+export interface GetAffiliationListResponse {
   message: string;
-  departments: string[];
+  affiliation: string[];
 }

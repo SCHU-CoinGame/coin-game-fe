@@ -4,7 +4,8 @@ const COIN_API = '/upbit_data';
 const DEEPLEARNING_API = '/get_deeplearning';
 const SET_USER_DATA_API = '/set_user_data';
 const GET_USER_DATA_API = '/get_user_data';
-const GET_DEPARTMENT_LIST_API = '/get_department_list';
+const GET_AFFILIATION_LIST_API = '/get_affiliation_list';
+const SET_CLICK_STREAM_API = '/set_click_stream';
 
 export {
   BASE_URL,
@@ -12,5 +13,6 @@ export {
   DEEPLEARNING_API,
   SET_USER_DATA_API,
   GET_USER_DATA_API,
-  GET_DEPARTMENT_LIST_API,
+  GET_AFFILIATION_LIST_API,
+  SET_CLICK_STREAM_API,
 };

@@ -7,7 +7,7 @@ import { useUserInfoStore } from 'stores/userInfoStore';
 import { useMutation } from '@tanstack/react-query';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { transformCoinData } from 'views/CoinConverter';
-import { useCoinListStore } from 'stores/userInfoStore';
+import { useCoinListStore, useUserClickStreamStore } from 'stores/userInfoStore';
 
 const containerCss = css`
   width: 100%;
@@ -59,8 +59,7 @@ const rankBtnCss = css`
 
 type FieldType = {
   name: string;
-  department: string;
-  student_id: number;
+  affiliation: string;
   nickname: string;
 };
 
@@ -86,6 +85,7 @@ function SigninPanel() {
     upbitData.mutate();
     console.log(values);
     useUserInfoStore.getState().changeUserInfo({ ...values, reTryCount: 2, highScore: 0 });
+    useUserClickStreamStore.getState().resetState();
     requestSignin();
     navigate('/');
   };
@@ -101,17 +101,17 @@ function SigninPanel() {
           <Input css={inputCss} placeholder="이름" />
         </Form.Item>
         <Form.Item<FieldType>
-          name="department"
-          rules={[{ required: true, message: '학과를 입력해주세요.' }]}
+          name="affiliation"
+          rules={[{ required: true, message: '소속을 입력해주세요.' }]}
         >
-          <Input css={inputCss} placeholder="학과(풀네임으로 적어주세요)" />
+          <Input css={inputCss} placeholder="소속" />
         </Form.Item>
-        <Form.Item<FieldType>
+        {/* <Form.Item<FieldType>
           name="student_id"
           rules={[{ required: true, message: '학번을 입력해주세요.' }]}
         >
           <Input css={inputCss} placeholder="학번" />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item<FieldType> name="nickname">
           <Input css={inputCss} placeholder="별명" />
         </Form.Item>
