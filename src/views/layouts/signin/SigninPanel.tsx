@@ -37,12 +37,13 @@ const inputCss = css`
 
 const btnContainerCss = css`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
   gap: 10px;
 `;
 
 const startBtnCss = css`
-  width: 120px;
+  width: 250px;
   height: 40px;
   color: white;
   background-color: ${colorLight.mainBtnColor};
@@ -92,6 +93,10 @@ function SigninPanel() {
     navigate('/rank');
   };
 
+  const handleAnalysis = () => {
+    navigate('/analysis');
+  };
+
   const onFinish = (values: any) => {
     upbitData.mutate();
     userAnalysis.mutate();
@@ -129,12 +134,22 @@ function SigninPanel() {
         </Form.Item>
         {/* <div>별명 미작성 시, 랭킹에 이름으로 등록됩니다</div> */}
         <div css={btnContainerCss}>
-          <Button css={rankBtnCss} onClick={handleRank}>
-            랭킹 확인
-          </Button>
           <Button type="primary" htmlType="submit" css={startBtnCss}>
             게임 시작
           </Button>
+          <div
+            css={css`
+              display: flex;
+              gap: 10px;
+            `}
+          >
+            <Button css={rankBtnCss} onClick={handleRank}>
+              랭킹 확인
+            </Button>
+            <Button css={rankBtnCss} onClick={handleAnalysis}>
+              통계 확인
+            </Button>
+          </div>
         </div>
       </Form>
     </div>

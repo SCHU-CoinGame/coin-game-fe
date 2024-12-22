@@ -54,7 +54,7 @@ const rankContainerCss = css`
 const rankItemCss = css`
   width: 100%;
   display: grid;
-  grid-template-columns: 2fr 4fr 3fr 3fr 5fr;
+  grid-template-columns: 2fr 4fr 3fr 3fr;
   gap: 10px;
   align-items: center;
 `;
@@ -62,7 +62,7 @@ const rankItemCss = css`
 const rankTitleCss = css`
   width: 100%;
   display: grid;
-  grid-template-columns: 2fr 4fr 3fr 3fr 5fr;
+  grid-template-columns: 2fr 4fr 3fr 3fr;
   gap: 10px;
   align-items: center;
   margin-bottom: 15px;
@@ -184,6 +184,7 @@ function RankPanel() {
     requestSignout();
     navigate('/signin');
   };
+
   const formatNumberWithComma = (number: number): string => {
     return new Intl.NumberFormat('en-US').format(number);
   };
@@ -197,7 +198,7 @@ function RankPanel() {
         <div css={emptyBoxCss}></div>
         순천향대 코인왕
         <Input
-          placeholder="이름 또는 학번"
+          placeholder="이름"
           css={inputCss}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -220,8 +221,7 @@ function RankPanel() {
             <div css={rankBigCss}>순위</div>
             <div css={rankBigCss}>잔액</div>
             <div css={rankBigCss}>이름</div>
-            <div css={rankBigCss}>학번</div>
-            <div css={rankBigCss}>학과</div>
+            <div css={rankBigCss}>소속</div>
           </div>
           {userData.data.data.map((user, index) => (
             <div

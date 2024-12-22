@@ -8,6 +8,7 @@ import { SelectCoin } from 'views/pages/SelectCoin';
 import { SecondHome } from 'views/pages/SecondHome';
 import { SelectMoney } from 'views/pages/SelectMoney';
 import { RankPage } from 'views/pages/RankPage';
+import { AnalysisPage } from 'views/pages/AnalysisPage';
 
 const AppRouter = createBrowserRouter([
   {
@@ -18,6 +19,11 @@ const AppRouter = createBrowserRouter([
   {
     path: '/rank',
     element: <RankPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/analysis',
+    element: <AnalysisPage />,
     errorElement: <ErrorPage />,
   },
   {

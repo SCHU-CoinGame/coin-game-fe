@@ -663,6 +663,10 @@ function SelectMoneyPanel() {
     navigate('/rank');
   };
 
+  const handleAnalysisClick = () => {
+    navigate('/analysis');
+  };
+
   const handleHomeClick = () => {
     changeUserInfo({
       name: '',
@@ -1035,7 +1039,7 @@ function SelectMoneyPanel() {
           <Button key="submit" onClick={handleHomeClick}>
             홈으로
           </Button>,
-          <Button key="ranking" css={modalOkBtnCss}>
+          <Button key="ranking" type="primary" css={modalOkBtnCss} onClick={handleAnalysisClick}>
             유저 통계 확인
           </Button>,
           <Button key="ranking" type="primary" onClick={handleRankingClick} css={modalOkBtnCss}>

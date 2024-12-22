@@ -572,7 +572,7 @@ function SelectCoinPanel() {
             return (
               <div key={index} css={coinItemCss}>
                 <div css={coinTitleCss(isSelected)} onClick={() => toggleCoinSelection(index)}>
-                  {coin.label} {coin.value}
+                  {coin.label}
                   <Button css={selectButtonCss(isSelected, isDisabled)} disabled={isDisabled}>
                     {isSelected ? '해제' : '선택'}
                   </Button>
