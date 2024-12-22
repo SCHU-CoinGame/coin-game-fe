@@ -6,6 +6,7 @@ const SET_USER_DATA_API = '/set_user_data';
 const GET_USER_DATA_API = '/get_user_data';
 const GET_AFFILIATION_LIST_API = '/get_affiliation_list';
 const SET_CLICK_STREAM_API = '/set_click_stream';
+const GET_USER_ANALYSIS_API = '/get_user_analysis';
 
 export {
   BASE_URL,
@@ -15,4 +16,5 @@ export {
   GET_USER_DATA_API,
   GET_AFFILIATION_LIST_API,
   SET_CLICK_STREAM_API,
+  GET_USER_ANALYSIS_API,
 };

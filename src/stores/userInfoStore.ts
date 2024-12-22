@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { GetUserAnalysisResponse } from 'api/models/response';
 
 interface UserInfoState {
   userInfo: {
@@ -258,10 +259,28 @@ const useUserClickStreamStore = create(
   ),
 );
 
+interface UserAnalysisStore {
+  userAnalysis: GetUserAnalysisResponse | null;
+  setUserAnalysis: (data: GetUserAnalysisResponse) => void;
+}
+const useUserAnalysisStore = create(
+  persist<UserAnalysisStore>(
+    (set) => ({
+      userAnalysis: null,
+      setUserAnalysis: (data) => set({ userAnalysis: data }),
+    }),
+    {
+      name: 'userAnalysis',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+
 export {
   useUserInfoStore,
   useCoinInfoStore,
   useCoinListStore,
   useDeeplearningRankStore,
   useUserClickStreamStore,
+  useUserAnalysisStore,
 };

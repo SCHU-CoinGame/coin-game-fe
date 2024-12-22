@@ -8,6 +8,8 @@ import { useMutation } from '@tanstack/react-query';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { transformCoinData } from 'views/CoinConverter';
 import { useCoinListStore, useUserClickStreamStore } from 'stores/userInfoStore';
+import { useUserAnalysisStore } from 'stores/userInfoStore';
+import { getUserAnalysis } from 'api/requests/requestUserData';
 
 const containerCss = css`
   width: 100%;
@@ -75,6 +77,15 @@ function SigninPanel() {
     },
     onMutate: () => {},
   });
+
+  const setUserAnalysis = useUserAnalysisStore((state) => state.setUserAnalysis);
+  const userAnalysis = useMutation({
+    mutationFn: getUserAnalysis,
+    onSuccess: (data) => {
+      setUserAnalysis(data);
+    },
+  });
+
   const navigate = useNavigate();
 
   const handleRank = () => {
@@ -83,6 +94,7 @@ function SigninPanel() {
 
   const onFinish = (values: any) => {
     upbitData.mutate();
+    userAnalysis.mutate();
     console.log(values);
     useUserInfoStore.getState().changeUserInfo({ ...values, reTryCount: 2, highScore: 0 });
     useUserClickStreamStore.getState().resetState();

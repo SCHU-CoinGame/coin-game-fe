@@ -1,6 +1,6 @@
 import { Overlay } from 'views/layouts/Overlay';
 import { css } from '@emotion/react';
-import { Button, Radio, Modal } from 'antd';
+import { Button, Radio, Modal, Tooltip } from 'antd';
 import { useState, useEffect, useRef } from 'react';
 import { colorLight } from 'styles/colors';
 import {
@@ -8,6 +8,7 @@ import {
   useUserInfoStore,
   useDeeplearningRankStore,
   useUserClickStreamStore,
+  useUserAnalysisStore,
 } from 'stores/userInfoStore';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
@@ -59,6 +60,7 @@ const progressBoxCss = (isGameStart: boolean) => css`
   transition:
     top 1s ease-in,
     opacity 0.3s ease;
+  position: relative;
 `;
 
 const progressCss = (countdown: number) => css`
@@ -66,7 +68,17 @@ const progressCss = (countdown: number) => css`
   height: 16px;
   border-radius: 5px 0 0 5px;
   background-color: ${colorLight.mainBtnColor};
-  transition: width 20s linear;
+  transition: width 90s linear;
+`;
+
+const analysisTimeCss = (time: number) => css`
+  position: absolute;
+  top: 0;
+  left: ${time}%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  word-break: keep-all;
 `;
 
 const titleContainerCss = css`
@@ -334,9 +346,8 @@ const modalContentTextCss = css`
 `;
 
 const highScoreTextCss = css`
-  font-size: 18px;
+  font-size: 22px;
   font-family: 'SpoqaHanSansNeo-Bold';
-  margin-top: 5px;
   color: #474747;
 `;
 
@@ -399,6 +410,8 @@ function SelectMoneyPanel() {
     updateLeverage,
     updateBalance,
   } = useUserClickStreamStore();
+
+  const userAnalysis = useUserAnalysisStore.getState().userAnalysis;
 
   const state = useUserClickStreamStore();
   usePreventNavigation({ when: true });
@@ -467,7 +480,7 @@ function SelectMoneyPanel() {
   }
 
   const [countdown, setCountdown] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(25);
+  const [timeLeft, setTimeLeft] = useState(95);
   const gameTimerRef = useRef<number | null>(null); // gameTimer를 저장할 ref
   const [selectedAmounts, setSelectedAmounts] = useState(['', '', '']);
   const [isClickAiRecommend, setIsClickAiRecommend] = useState(false);
@@ -775,6 +788,11 @@ function SelectMoneyPanel() {
     return new Intl.NumberFormat('en-US').format(number);
   };
 
+  // 레버리지 순으로 오름차순 정렬
+  function sortByLeverage(data: { leverage: number; count: number; ratio: number }[]) {
+    return data.sort((a, b) => a.leverage - b.leverage);
+  }
+
   const handleRecommendClick = () => {
     setIsClickAiRecommend(true);
     const indices = assignValuesByOrder(deeplearningRank);
@@ -825,6 +843,27 @@ function SelectMoneyPanel() {
           {isGameStart ? calcTimer : '종목 하나당 각각 10억, 5억, 1억을 투자할 수 있습니다.'}
           <div css={progressBoxCss(isGameStart)}>
             <div css={progressCss(countdown)}></div>
+            <div
+              css={analysisTimeCss(
+                userAnalysis ? Math.round(100 * (userAnalysis.page_time_avg.avg_time_2 / 90)) : 0,
+              )}
+            >
+              <div
+                css={css`
+                  width: 4px;
+                  height: 24px;
+                  border-radius: 0 0 4px 4px;
+                  background-color: #e25d5d;
+                `}
+              />
+              <div
+                css={css`
+                  font-size: 12px;
+                `}
+              >
+                플레이어들의 평균 선택 완료 시간
+              </div>
+            </div>
           </div>
         </div>
         <div css={mainBodyCss}>
@@ -905,10 +944,18 @@ function SelectMoneyPanel() {
               buttonStyle="solid"
               css={radioGroupCss}
             >
-              {[1, 10, 100, 1000].map((value) => (
-                <Radio.Button key={value} value={value} css={leverageRadioButtonCss}>
-                  {value}배{value === 1000 ? '!!' : ''}
-                </Radio.Button>
+              {[1, 10, 100, 1000].map((value, index) => (
+                <Tooltip
+                  title={
+                    userAnalysis
+                      ? `${Math.round(sortByLeverage(userAnalysis.leverage_ratio)[index].ratio)}%의 플레이어들이 ${value}배 레버리지를 선택했어요 `
+                      : ''
+                  }
+                >
+                  <Radio.Button key={value} value={value} css={leverageRadioButtonCss}>
+                    {value}배{value === 1000 ? '!!' : ''}
+                  </Radio.Button>
+                </Tooltip>
               ))}
             </Radio.Group>
           </div>
@@ -917,9 +964,18 @@ function SelectMoneyPanel() {
           </div>
 
           <div css={buttonContainerCss(isGameStart)}>
-            <Button css={recommendCss} onClick={handleRecommendClick}>
-              AI 추천
-            </Button>
+            <Tooltip
+              overlayStyle={{ width: '140px' }}
+              title={
+                userAnalysis
+                  ? `${Math.round(userAnalysis.ai_recommend_2_ratio[0].ratio)}%의 플레이어들이\n AI추천을 클릭했어요 `
+                  : ''
+              }
+            >
+              <Button css={recommendCss} onClick={handleRecommendClick}>
+                AI 추천
+              </Button>
+            </Tooltip>
             <Button
               css={nextBtnCss(isAllSelected)}
               onClick={handleNextClick}
@@ -946,11 +1002,11 @@ function SelectMoneyPanel() {
       <Modal
         open={calcTimer === 0}
         footer={[
-          <Button key="reTry" onClick={handleReTryClick} disabled={userInfo.reTryCount === 0}>
-            재도전(남은기회 {userInfo.reTryCount}회)
-          </Button>,
+          // <Button key="reTry" onClick={handleReTryClick} disabled={userInfo.reTryCount === 0}>
+          //   재도전(남은기회 {userInfo.reTryCount}회)
+          // </Button>,
           <Button key="submit" type="primary" onClick={handleGameEndClick} css={modalOkBtnCss}>
-            점수 등록
+            다음
           </Button>,
         ]}
         closable={false}
@@ -962,8 +1018,11 @@ function SelectMoneyPanel() {
           <div css={modalContentCss(balance)}>
             <div css={modalContentTextCss}>총 잔고: {formatNumberWithComma(balance, true)} 원</div>
             <div css={highScoreTextCss}>
-              나의 최고 점수: {formatNumberWithComma(userInfo.highScore, true)} 원 (랭킹은
-              최고점수로 등록됩니다)
+              플레이어들의 평균 잔고:{' '}
+              {userAnalysis
+                ? formatNumberWithComma(userAnalysis.avg_balance.avg_balance, true)
+                : '16,000,000,000'}
+              원
             </div>
           </div>
         </div>
@@ -975,6 +1034,9 @@ function SelectMoneyPanel() {
         footer={[
           <Button key="submit" onClick={handleHomeClick}>
             홈으로
+          </Button>,
+          <Button key="ranking" css={modalOkBtnCss}>
+            유저 통계 확인
           </Button>,
           <Button key="ranking" type="primary" onClick={handleRankingClick} css={modalOkBtnCss}>
             랭킹 확인

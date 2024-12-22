@@ -1,9 +1,9 @@
 import { css } from '@emotion/react';
 import { useState, useEffect, useRef } from 'react';
-import { Button, Tag, Modal } from 'antd';
+import { Button, Tag, Modal, Tooltip } from 'antd';
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { colorLight } from 'styles/colors';
-import { useCoinInfoStore } from 'stores/userInfoStore';
+import { useCoinInfoStore, useUserAnalysisStore } from 'stores/userInfoStore';
 import { useNavigate } from 'react-router-dom';
 import { Overlay } from 'views/layouts/Overlay';
 import {
@@ -14,8 +14,9 @@ import {
 import { getDeeplearningData } from 'api/requests/requestCoin';
 import { useQuery } from '@tanstack/react-query';
 import { HintTag } from 'views/components/HintTag';
-import { ConvertSlashToDash } from 'views/CoinConverter';
+import { ConvertSlashToDash, ConvertDashToSlash } from 'views/CoinConverter';
 import { usePreventNavigation } from 'hooks/UsePreventNavigation';
+
 const containerCss = css`
   width: 100%;
   height: 100%;
@@ -23,7 +24,7 @@ const containerCss = css`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
 `;
 
 const titleTextCss = css`
@@ -35,6 +36,7 @@ const titleTextCss = css`
 `;
 
 const chartContainerCss = css`
+  margin-top: 20px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 5px;
@@ -69,6 +71,7 @@ const progressBoxCss = css`
   border-radius: 5px;
   justify-content: flex-start;
   background-color: #e2e2e2;
+  position: relative;
 `;
 
 const progressCss = (countdown: number) => css`
@@ -76,7 +79,17 @@ const progressCss = (countdown: number) => css`
   height: 16px;
   border-radius: 5px 0 0 5px;
   background-color: ${colorLight.mainBtnColor};
-  transition: width 20s linear;
+  transition: width 90s linear;
+`;
+
+const analysisTimeCss = (time: number) => css`
+  position: absolute;
+  top: 0;
+  left: ${time}%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  word-break: keep-all;
 `;
 
 const buttonContainerCss = css`
@@ -236,12 +249,13 @@ const modalOkBtnCss = css`
 
 function SelectCoinPanel() {
   usePreventNavigation({ when: true });
-    const { data: deeplearningData } = useQuery({
-   queryKey: ['deeplearningData'],
-     queryFn: getDeeplearningData,
-   });
+  const { data: deeplearningData } = useQuery({
+    queryKey: ['deeplearningData'],
+    queryFn: getDeeplearningData,
+  });
+
   // sampleData
- // const deeplearningData = [
+  // const deeplearningData = [
   //   {
   //     largest_rise: false,
   //     code: 'KRW-BTC',
@@ -352,6 +366,25 @@ function SelectCoinPanel() {
   //   },
   // ];
 
+  const userAnalysis = useUserAnalysisStore.getState().userAnalysis;
+
+  const getMaxCountCoin = (data: { coin: string; count: number; ratio: number }[]) => {
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    let maxCoin = data[0];
+
+    for (let i = 1; i < data.length; i++) {
+      if (data[i].count > maxCoin.count) {
+        maxCoin = data[i];
+      }
+    }
+
+    return ConvertDashToSlash(maxCoin.coin);
+  };
+  const userCoinRatio = getMaxCountCoin(userAnalysis?.coin_ratio || []);
+
   const { updateRemainingTime, updateCoins, updateAiRecommend, updateDeeplearningData } =
     useUserClickStreamStore();
 
@@ -378,7 +411,7 @@ function SelectCoinPanel() {
 
   // 시작 카운트다운
   const [countdown, setCountdown] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(25);
+  const [timeLeft, setTimeLeft] = useState(95);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const gameTimerRef = useRef<number | null>(null);
@@ -502,6 +535,29 @@ function SelectCoinPanel() {
         </div>
         <div css={progressBoxCss}>
           {isGameTimerRunning && <div css={progressCss(countdown)}></div>}
+          {isGameTimerRunning && (
+            <div
+              css={analysisTimeCss(
+                userAnalysis ? Math.round(100 * (userAnalysis.page_time_avg.avg_time_1 / 90)) : 0,
+              )}
+            >
+              <div
+                css={css`
+                  width: 4px;
+                  height: 24px;
+                  border-radius: 0 0 4px 4px;
+                  background-color: #e25d5d;
+                `}
+              />
+              <div
+                css={css`
+                  font-size: 12px;
+                `}
+              >
+                플레이어들의 평균 선택 완료 시간
+              </div>
+            </div>
+          )}
         </div>
         <div css={chartContainerCss}>
           {coins.map((coin, index) => {
@@ -526,6 +582,7 @@ function SelectCoinPanel() {
                   {isLeastVolatile && <HintTag hint={'안정적'} />}
                   {isSpike && <HintTag hint={'거래량'} />}
                   {aiPick === 1 && <HintTag hint={'AI픽'} />}
+                  {userAnalysis && userCoinRatio === coin.value && <HintTag hint={'사용자픽'} />}
                 </div>
                 <BtcWidget coin={coin.value} toolbarAllowed={false} />
               </div>
@@ -548,9 +605,18 @@ function SelectCoinPanel() {
           </div>
         </div>
         <div css={buttonContainerCss}>
-          <Button css={recommendCss} onClick={handleRecommendClick}>
-            AI 추천
-          </Button>
+          <Tooltip
+            overlayStyle={{ width: '140px' }}
+            title={
+              userAnalysis
+                ? `${Math.round(userAnalysis.ai_recommend_1_ratio[0].ratio)}%의 플레이어들이\n AI추천을 클릭했어요 `
+                : ''
+            }
+          >
+            <Button css={recommendCss} onClick={handleRecommendClick}>
+              AI 추천
+            </Button>
+          </Tooltip>
           <Button
             css={nextBtnCss(isMaxSelected)}
             onClick={handleNextClick}
