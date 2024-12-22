@@ -84,6 +84,11 @@ function AnalysisPanel() {
     queryFn: () => getUserAnalysis(),
   });
 
+  // 레버리지 순으로 오름차순 정렬
+  function sortByLeverage(data: { leverage: number; count: number; ratio: number }[]) {
+    return data.sort((a, b) => a.leverage - b.leverage);
+  }
+
   // 코인 선택 비율
   const coinRatioData = userAnalysis.data?.coin_ratio.map((item) => ({
     id: item.coin,
@@ -132,11 +137,13 @@ function AnalysisPanel() {
     time: Math.round(item.avg_sell_time),
   }));
 
-  // 레버리지 별 평균 잔액
-  const leverageAverageBalanceData = userAnalysis.data?.leverage_avg_balance.map((item) => ({
-    leverage: item.leverage,
-    balance: Math.round(item.avg_balance),
-  }));
+  // 레버리지 별 평균 잔액 (레버리지 순 정렬)
+  const leverageAverageBalanceData = userAnalysis.data?.leverage_avg_balance
+    .map((item) => ({
+      leverage: item.leverage,
+      balance: Math.round(item.avg_balance),
+    }))
+    .sort((a, b) => a.leverage - b.leverage);
 
   // AI 추천 기능 사용 별 평균 잔액 - 코인 선택
   const aiRecommendAverageBalanceData_1 = userAnalysis.data?.ai_recommend_1_avg_balance.map(
