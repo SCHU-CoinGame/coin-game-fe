@@ -360,16 +360,24 @@ const timeOverModalCss = css`
   margin-top: 30px;
 `;
 
-const cellBtnCss = (isSelected: boolean, isRecommend: boolean) => css`
+const cellBtnCss = (isSelected: boolean, isRecommend: boolean, isGoodSell: boolean) => css`
   width: 90px;
   height: 40px;
-  background-color: ${isSelected ? '#969696' : isRecommend ? '#fff23e' : colorLight.mainBtnColor};
+  background-color: ${isSelected
+    ? '#b9b9b9'
+    : isRecommend
+      ? isGoodSell
+        ? '#DE4341'
+        : colorLight.mainBtnColor
+      : '#696969'};
 
   border: ${isSelected
-    ? '1px solid #7b7b7b'
+    ? '2px solid #7b7b7b'
     : isRecommend
-      ? '2px solid #fcff44'
-      : '1px solid #0062DF'};
+      ? isGoodSell
+        ? '2px solid #DE4341'
+        : '2px solid #1A48B0'
+      : '2px solid #6b6b6b'};
 
   outline: none;
   &:focus {
@@ -559,6 +567,28 @@ function SelectMoneyPanel() {
     if (base) {
       console.log(compare1, base, compare2);
       if (base > compare1 || base < compare2) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  // 매도 타이밍 확인
+  function checkSellTiming(base: number, compare1: number) {
+    if (base) {
+      if (base > compare1) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  // 손절 타이밍 확인
+  function checkStopLossTiming(base: number, compare1: number) {
+    if (base) {
+      if (base < compare1) {
         return true;
       }
       return false;
@@ -1021,7 +1051,14 @@ function SelectMoneyPanel() {
             {[0, 1, 2].map((index) => (
               <div>
                 <Tooltip
-                  title="AI추천 매도 타이밍!"
+                  title={
+                    checkSellTiming(
+                      currentTradePrices[coinInfo[`coin_${index + 1}`].value],
+                      coinInfo[`coin_${index + 1}`].sellUp,
+                    )
+                      ? 'AI추천 매도 타이밍!'
+                      : 'AI추천 손절 타이밍!'
+                  }
                   open={
                     compareNumbers(
                       currentTradePrices[coinInfo[`coin_${index + 1}`].value],
@@ -1039,6 +1076,10 @@ function SelectMoneyPanel() {
                         currentTradePrices[coinInfo[`coin_${index + 1}`].value],
                         coinInfo[`coin_${index + 1}`].sellUp,
                         coinInfo[`coin_${index + 1}`].sellDown,
+                      ),
+                      checkSellTiming(
+                        currentTradePrices[coinInfo[`coin_${index + 1}`].value],
+                        coinInfo[`coin_${index + 1}`].sellUp,
                       ),
                     )}
                     onClick={() => handleCellClick(index)}
