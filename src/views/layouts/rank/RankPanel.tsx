@@ -174,9 +174,9 @@ function RankPanel() {
 
     // 코인 정보 초기화
     changeCoinInfo({
-      coin_1: { value: '', label: '' },
-      coin_2: { value: '', label: '' },
-      coin_3: { value: '', label: '' },
+      coin_1: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_2: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_3: { value: '', label: '', sellUp: 0, sellDown: 0 },
     });
 
     // 잔액 초기화
@@ -196,7 +196,7 @@ function RankPanel() {
       <div css={titleCss}>
         <div css={emptyBoxCss}></div>
         <div css={emptyBoxCss}></div>
-        순천향대 코인왕
+        코인 예측왕
         <Input
           placeholder="이름"
           css={inputCss}

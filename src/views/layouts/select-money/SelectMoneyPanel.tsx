@@ -13,7 +13,7 @@ import {
 import { BtcWidget } from 'views/layouts/coin-chart/BtcWidget';
 import { getUpbitData } from 'api/requests/requestCoin';
 import { useMutation } from '@tanstack/react-query';
-import { ConvertSlashToDash, transformMoneyData } from 'views/CoinConverter';
+import { ConvertDashToSlash, transformMoneyData } from 'views/CoinConverter';
 import { useNavigate } from 'react-router-dom';
 import { setUserData } from 'api/requests/requestCoin';
 import { requestSignout } from 'api/requests/requestAuth';
@@ -360,11 +360,17 @@ const timeOverModalCss = css`
   margin-top: 30px;
 `;
 
-const cellBtnCss = (isSelected: boolean) => css`
+const cellBtnCss = (isSelected: boolean, isRecommend: boolean) => css`
   width: 90px;
   height: 40px;
-  background-color: ${isSelected ? '#969696' : colorLight.mainBtnColor};
-  border-color: ${isSelected ? '#7b7b7b' : colorLight.mainBtnColor};
+  background-color: ${isSelected ? '#969696' : isRecommend ? '#fff23e' : colorLight.mainBtnColor};
+
+  border: ${isSelected
+    ? '1px solid #7b7b7b'
+    : isRecommend
+      ? '2px solid #fcff44'
+      : '1px solid #0062DF'};
+
   outline: none;
   &:focus {
     outline: none;
@@ -384,13 +390,22 @@ const finishTitleCss = css`
   margin-bottom: 20px;
 `;
 
+interface CoinInfo {
+  [key: string]: {
+    value: string;
+    label: string;
+    sellUp: number;
+    sellDown: number;
+  };
+}
+
 function SelectMoneyPanel() {
   const [coinDataList, setCoinDataList] = useState<any[]>([]); // 데이터 리스트 상태 추가
   const [finalCoinInfo, setFinalCoinInfo] = useState<any[]>([0, 0, 0]);
   const [previousTradePrices, setPreviousTradePrices] = useState<any>({});
   const [selectedLeverage, setSelectedLeverage] = useState<number>(1);
   const [isGameStart, setIsGameStart] = useState<boolean>(false);
-  const [calcTimer, setCalcTimer] = useState<number>(45);
+  const [calcTimer, setCalcTimer] = useState<number>(90);
   const [isTimeOverModalOpen, setIsTimeOverModalOpen] = useState(false);
   const [balance, setBalance] = useState<number>(1600000000);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
@@ -431,7 +446,7 @@ function SelectMoneyPanel() {
   });
 
   const { coinInfo } = useCoinInfoStore((state) => ({
-    coinInfo: state.coinInfo,
+    coinInfo: state.coinInfo as CoinInfo,
   }));
 
   const changeCoinInfo = useCoinInfoStore((state) => state.changeCoinInfo);
@@ -539,6 +554,18 @@ function SelectMoneyPanel() {
     });
   };
 
+  // 기준 숫자가 0이 아니면서 비교 조건을 만족하는지 확인
+  function compareNumbers(base: number, compare1: number, compare2: number) {
+    if (base) {
+      console.log(compare1, base, compare2);
+      if (base > compare1 || base < compare2) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
   const handleLeverageChange = (e: any) => {
     setSelectedLeverage(e.target.value);
   };
@@ -547,6 +574,7 @@ function SelectMoneyPanel() {
   const isAllSelected = selectedAmounts.every((amount) => amount !== '');
 
   const handleNextClick = () => {
+    console.log('coinInfo: ', coinInfo);
     const numbers = [1, 2, 3];
     const values = numbers.map((num) => getCoinValueByNumber(coinInfo, num));
     console.log(values[0], '에 투자한 돈: ', selectedAmounts[0]);
@@ -577,15 +605,15 @@ function SelectMoneyPanel() {
       console.log('온클릭', previousTradePrices);
       setFinalCoinInfo([
         {
-          value: ConvertSlashToDash(coinInfo.coin_1.value),
+          value: coinInfo.coin_1.value,
           money: transformMoneyData(selectedAmounts[0]),
         },
         {
-          value: ConvertSlashToDash(coinInfo.coin_2.value),
+          value: coinInfo.coin_2.value,
           money: transformMoneyData(selectedAmounts[1]),
         },
         {
-          value: ConvertSlashToDash(coinInfo.coin_3.value),
+          value: coinInfo.coin_3.value,
           money: transformMoneyData(selectedAmounts[2]),
         },
       ]);
@@ -610,7 +638,7 @@ function SelectMoneyPanel() {
       });
 
     try {
-      for (let i = 0; i < 45; i++) {
+      for (let i = 0; i < 90; i++) {
         if (controller.signal.aborted) {
           break;
         }
@@ -678,9 +706,9 @@ function SelectMoneyPanel() {
 
     // 코인 정보 초기화
     changeCoinInfo({
-      coin_1: { value: '', label: '' },
-      coin_2: { value: '', label: '' },
-      coin_3: { value: '', label: '' },
+      coin_1: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_2: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_3: { value: '', label: '', sellUp: 0, sellDown: 0 },
     });
 
     // 잔액 초기화
@@ -898,9 +926,9 @@ function SelectMoneyPanel() {
             </div>
           </div>
           <div css={chartContainerCss}>
-            <BtcWidget coin={coinInfo.coin_1.value} toolbarAllowed={true} />
-            <BtcWidget coin={coinInfo.coin_2.value} toolbarAllowed={true} />
-            <BtcWidget coin={coinInfo.coin_3.value} toolbarAllowed={true} />
+            <BtcWidget coin={ConvertDashToSlash(coinInfo.coin_1.value)} toolbarAllowed={true} />
+            <BtcWidget coin={ConvertDashToSlash(coinInfo.coin_2.value)} toolbarAllowed={true} />
+            <BtcWidget coin={ConvertDashToSlash(coinInfo.coin_3.value)} toolbarAllowed={true} />
           </div>
           <div css={radioContainerCss(isGameStart)}>
             {[0, 1, 2].map((index) => (
@@ -950,6 +978,7 @@ function SelectMoneyPanel() {
             >
               {[1, 10, 100, 1000].map((value, index) => (
                 <Tooltip
+                  key={value}
                   title={
                     userAnalysis
                       ? `${Math.round(sortByLeverage(userAnalysis.leverage_ratio)[index].ratio)}%의 플레이어들이 ${value}배 레버리지를 선택했어요 `
@@ -990,14 +1019,35 @@ function SelectMoneyPanel() {
           </div>
           <div css={cellBtnContainerCss(isGameStart)}>
             {[0, 1, 2].map((index) => (
-              <Button
-                key={index}
-                css={cellBtnCss(cellStates[index])}
-                onClick={() => handleCellClick(index)}
-                disabled={cellStates[index]}
-              >
-                {cellStates[index] ? '체결' : '매도'}
-              </Button>
+              <div>
+                <Tooltip
+                  title="AI추천 매도 타이밍!"
+                  open={
+                    compareNumbers(
+                      currentTradePrices[coinInfo[`coin_${index + 1}`].value],
+                      coinInfo[`coin_${index + 1}`].sellUp,
+                      coinInfo[`coin_${index + 1}`].sellDown,
+                    ) && !cellStates[index]
+                  }
+                  placement="bottom"
+                >
+                  <Button
+                    key={index}
+                    css={cellBtnCss(
+                      cellStates[index],
+                      compareNumbers(
+                        currentTradePrices[coinInfo[`coin_${index + 1}`].value],
+                        coinInfo[`coin_${index + 1}`].sellUp,
+                        coinInfo[`coin_${index + 1}`].sellDown,
+                      ),
+                    )}
+                    onClick={() => handleCellClick(index)}
+                    disabled={cellStates[index]}
+                  >
+                    {cellStates[index] ? '체결' : '매도'}
+                  </Button>
+                </Tooltip>
+              </div>
             ))}
           </div>
         </div>

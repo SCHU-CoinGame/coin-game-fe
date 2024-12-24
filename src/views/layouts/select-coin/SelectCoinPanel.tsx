@@ -257,112 +257,130 @@ function SelectCoinPanel() {
   // sampleData
   // const deeplearningData = [
   //   {
-  //     largest_rise: false,
   //     code: 'KRW-BTC',
-  //     largest_spike: false,
-  //     fastest_growth: true,
-  //     most_volatile: true,
-  //     percentage: 1.3158182310168738,
-  //     largest_drop: false,
   //     fastest_decline: false,
+  //     fastest_growth: false,
+  //     largest_drop: false,
+  //     largest_rise: false,
+  //     largest_spike: false,
   //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: 0.4372167578457425,
   //     rank: 1,
+  //     sell_down: 141663240.19521475,
+  //     sell_up: 142076759.80478525,
   //   },
   //   {
-  //     largest_rise: true,
   //     code: 'KRW-ETH',
-  //     largest_spike: true,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: 0.5329839511852842,
-  //     largest_drop: false,
   //     fastest_decline: false,
-  //     least_volatile: false,
-  //     rank: 2,
-  //   },
-  //   {
+  //     fastest_growth: false,
+  //     largest_drop: false,
   //     largest_rise: false,
-  //     code: 'KRW-DOGE',
   //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: 0.3970638917366956,
-  //     largest_drop: false,
-  //     fastest_decline: false,
   //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: 0.11945974428750089,
   //     rank: 3,
+  //     sell_down: 5114882.466495037,
+  //     sell_up: 5127117.533504963,
   //   },
   //   {
-  //     largest_rise: false,
-  //     code: 'KRW-BIGTIME',
-  //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: 0.228743978066023,
-  //     largest_drop: true,
+  //     code: 'KRW-DOGE',
   //     fastest_decline: false,
+  //     fastest_growth: false,
+  //     largest_drop: false,
+  //     largest_rise: false,
+  //     largest_spike: false,
   //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: 0.057648823124605994,
   //     rank: 4,
+  //     sell_down: 483.07710659027106,
+  //     sell_up: 483.52289340972897,
   //   },
   //   {
-  //     largest_rise: false,
-  //     code: 'KRW-SUI',
-  //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: 0.21710651676829268,
-  //     largest_drop: false,
-  //     fastest_decline: true,
-  //     least_volatile: true,
-  //     rank: 5,
-  //   },
-  //   {
-  //     largest_rise: false,
-  //     code: 'KRW-UXLINK',
-  //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: -0.23176080935838586,
-  //     largest_drop: false,
+  //     code: 'KRW-BIGTIME',
   //     fastest_decline: false,
-  //     least_volatile: false,
-  //     rank: 8,
-  //   },
-  //   {
-  //     largest_rise: false,
-  //     code: 'KRW-SOL',
-  //     largest_spike: false,
   //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: -1.1058837431903856,
   //     largest_drop: false,
-  //     fastest_decline: false,
-  //     least_volatile: false,
-  //     rank: 9,
-  //   },
-  //   {
   //     largest_rise: false,
-  //     code: 'KRW-XRP',
-  //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: -0.06528614939452285,
-  //     largest_drop: false,
-  //     fastest_decline: false,
+  //     largest_spike: true,
   //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: -0.5781067453723421,
   //     rank: 7,
+  //     sell_down: 213.02900648713134,
+  //     sell_up: 227.40709935128686,
   //   },
   //   {
-  //     largest_rise: false,
-  //     code: 'KRW-SXP',
-  //     largest_spike: false,
-  //     fastest_growth: false,
-  //     most_volatile: false,
-  //     percentage: -0.043716566921964184,
-  //     largest_drop: false,
+  //     code: 'KRW-SUI',
   //     fastest_decline: false,
+  //     fastest_growth: false,
+  //     largest_drop: false,
+  //     largest_rise: false,
+  //     largest_spike: false,
   //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: -0.06580852320220167,
+  //     rank: 5,
+  //     sell_down: 6802.416857528687,
+  //     sell_up: 6806.044789280892,
+  //   },
+  //   {
+  //     code: 'KRW-SOL',
+  //     fastest_decline: true,
+  //     fastest_growth: false,
+  //     largest_drop: true,
+  //     largest_rise: false,
+  //     largest_spike: false,
+  //     least_volatile: true,
+  //     most_volatile: false,
+  //     percentage: 0.24452055466699074,
+  //     rank: 2,
+  //     sell_down: 255597.80724048615,
+  //     sell_up: 326802.19275951385,
+  //   },
+  //   {
+  //     code: 'KRW-UXLINK',
+  //     fastest_decline: true,
+  //     fastest_growth: false,
+  //     largest_drop: true,
+  //     largest_rise: false,
+  //     largest_spike: false,
+  //     least_volatile: true,
+  //     most_volatile: false,
+  //     percentage: 0.24452055466699074,
+  //     rank: 8,
+  //     sell_down: 2537.80724048615,
+  //     sell_up: 2539.19275951385,
+  //   },
+  //   {
+  //     code: 'KRW-XRP',
+  //     fastest_decline: false,
+  //     fastest_growth: false,
+  //     largest_drop: false,
+  //     largest_rise: false,
+  //     largest_spike: false,
+  //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: -0.06738888053926642,
   //     rank: 6,
+  //     sell_down: 3369.1826566696172,
+  //     sell_up: 3372.8173433303828,
+  //   },
+  //   {
+  //     code: 'KRW-SXP',
+  //     fastest_decline: false,
+  //     fastest_growth: false,
+  //     largest_drop: false,
+  //     largest_rise: false,
+  //     largest_spike: false,
+  //     least_volatile: false,
+  //     most_volatile: false,
+  //     percentage: -1.833837399097011,
+  //     rank: 9,
+  //     sell_down: 395.73223963975886,
+  //     sell_up: 489.0433880180121,
   //   },
   // ];
 
@@ -381,7 +399,7 @@ function SelectCoinPanel() {
       }
     }
 
-    return ConvertDashToSlash(maxCoin.coin);
+    return maxCoin.coin;
   };
   const userCoinRatio = getMaxCountCoin(userAnalysis?.coin_ratio || []);
 
@@ -477,18 +495,82 @@ function SelectCoinPanel() {
 
   const isMaxSelected = selectedCoins.length === 3;
 
+  function getLabelByValue(dataArray: any[], value: string) {
+    // 배열에서 value와 일치하는 객체를 찾음
+    const foundItem = dataArray.find((item) => item.value === value);
+    // 일치하는 객체가 있으면 label 반환, 없으면 null 반환
+    return foundItem ? foundItem.label : null;
+  }
+
+  function createCoinObject(firstArray: string[], secondArray: any[]) {
+    interface CoinResult {
+      coin_1: {
+        value: string;
+        label: string;
+        sellUp: number;
+        sellDown: number;
+      };
+      coin_2: {
+        value: string;
+        label: string;
+        sellUp: number;
+        sellDown: number;
+      };
+      coin_3: {
+        value: string;
+        label: string;
+        sellUp: number;
+        sellDown: number;
+      };
+    }
+
+    const result = {} as CoinResult;
+
+    firstArray.forEach((code, index) => {
+      const coinData = secondArray.find((coin) => coin.code === code);
+      if (coinData) {
+        const coinInfo = {
+          value: code,
+          label: getLabelByValue(coins, code),
+          sellUp: coinData.sell_up,
+          sellDown: coinData.sell_down,
+        };
+
+        switch (index) {
+          case 0:
+            result.coin_1 = coinInfo;
+            break;
+          case 1:
+            result.coin_2 = coinInfo;
+            break;
+          case 2:
+            result.coin_3 = coinInfo;
+            break;
+        }
+      }
+    });
+
+    return result;
+  }
+
   //modal 상태관리
   const handleOk = () => {
     console.log('남은시간: ', timeLeft);
     updateRemainingTime(1, timeLeft);
 
     const selectedLabels = [
-      ConvertSlashToDash(coins[selectedCoins[0]].value),
-      ConvertSlashToDash(coins[selectedCoins[1]].value),
-      ConvertSlashToDash(coins[selectedCoins[2]].value),
+      coins[selectedCoins[0]].value,
+      coins[selectedCoins[1]].value,
+      coins[selectedCoins[2]].value,
+    ];
+
+    const clickStreamCoin = [
+      ConvertDashToSlash(coins[selectedCoins[0]].value),
+      ConvertDashToSlash(coins[selectedCoins[1]].value),
+      ConvertDashToSlash(coins[selectedCoins[2]].value),
     ];
     console.log('선택한 종목: ', selectedLabels);
-    updateCoins(selectedLabels);
+    updateCoins(clickStreamCoin);
 
     const selectedCoinData = getSelectedCoinData(deeplearningData || [], selectedLabels);
     console.log('선택한 종목의 딥러닝 데이터: ', selectedCoinData);
@@ -500,11 +582,12 @@ function SelectCoinPanel() {
     if (deeplearningData) {
       changeDeeplearningRank(getRanksByIndices(deeplearningData, selectedCoins));
     }
-    changeCoinInfo({
-      coin_1: { value: coins[selectedCoins[0]].value, label: coins[selectedCoins[0]].label },
-      coin_2: { value: coins[selectedCoins[1]].value, label: coins[selectedCoins[1]].label },
-      coin_3: { value: coins[selectedCoins[2]].value, label: coins[selectedCoins[2]].label },
-    });
+
+    const coinObject = createCoinObject(selectedLabels, selectedCoinData);
+
+    console.log('coinObject: ', coinObject);
+
+    changeCoinInfo(coinObject);
     navigate('/second-home');
 
     setIsModalOpen(false);
@@ -561,6 +644,7 @@ function SelectCoinPanel() {
         </div>
         <div css={chartContainerCss}>
           {coins.map((coin, index) => {
+            console.log(deeplearningData);
             const isSelected = selectedCoins.includes(index);
             const isDisabled = !isSelected && isMaxSelected;
             const isLargestRise = deeplearningData?.[index].largest_rise;
@@ -584,7 +668,7 @@ function SelectCoinPanel() {
                   {aiPick === 1 && <HintTag hint={'AI픽'} />}
                   {userAnalysis && userCoinRatio === coin.value && <HintTag hint={'사용자픽'} />}
                 </div>
-                <BtcWidget coin={coin.value} toolbarAllowed={false} />
+                <BtcWidget coin={ConvertDashToSlash(coin.value)} toolbarAllowed={false} />
               </div>
             );
           })}

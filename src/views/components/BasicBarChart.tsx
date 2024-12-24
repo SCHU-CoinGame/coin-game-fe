@@ -27,6 +27,7 @@ const MyResponsiveBar = ({
   colors: string;
 }) => (
   <ResponsiveBar
+    animate={false}
     data={data}
     keys={keys}
     indexBy={indexBy}

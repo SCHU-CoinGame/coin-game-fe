@@ -46,15 +46,15 @@ const useUserInfoStore = create(
 
 interface CoinInfoState {
   coinInfo: {
-    coin_1: { value: string; label: string };
-    coin_2: { value: string; label: string };
-    coin_3: { value: string; label: string };
+    coin_1: { value: string; label: string; sellUp: number; sellDown: number };
+    coin_2: { value: string; label: string; sellUp: number; sellDown: number };
+    coin_3: { value: string; label: string; sellUp: number; sellDown: number };
   };
   balance: number;
   changeCoinInfo: (value: {
-    coin_1: { value: string; label: string };
-    coin_2: { value: string; label: string };
-    coin_3: { value: string; label: string };
+    coin_1: { value: string; label: string; sellUp: number; sellDown: number };
+    coin_2: { value: string; label: string; sellUp: number; sellDown: number };
+    coin_3: { value: string; label: string; sellUp: number; sellDown: number };
   }) => void;
   changeBalance: (value: number) => void;
 }
@@ -63,15 +63,15 @@ const useCoinInfoStore = create(
   persist<CoinInfoState>(
     (set) => ({
       coinInfo: {
-        coin_1: { value: '', label: '' },
-        coin_2: { value: '', label: '' },
-        coin_3: { value: '', label: '' },
+        coin_1: { value: '', label: '', sellUp: 0, sellDown: 0 },
+        coin_2: { value: '', label: '', sellUp: 0, sellDown: 0 },
+        coin_3: { value: '', label: '', sellUp: 0, sellDown: 0 },
       },
       balance: 0,
       changeCoinInfo: (value: {
-        coin_1: { value: string; label: string };
-        coin_2: { value: string; label: string };
-        coin_3: { value: string; label: string };
+        coin_1: { value: string; label: string; sellUp: number; sellDown: number };
+        coin_2: { value: string; label: string; sellUp: number; sellDown: number };
+        coin_3: { value: string; label: string; sellUp: number; sellDown: number };
       }) => set({ coinInfo: value }),
       changeBalance: (value: number) => set({ balance: value }),
     }),

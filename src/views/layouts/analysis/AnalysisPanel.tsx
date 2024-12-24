@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { css } from '@emotion/react';
 import { HomeOutlined, CrownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -48,9 +48,9 @@ const chartContainerCss = css`
   justify-content: flex-start;
   align-items: center;
   margin-top: 20px;
-  gap: 30px;
+  row-gap: 30px;
   flex-wrap: wrap;
-  width: 1710px;
+  width: 92%;
 `;
 
 const pieChartCss = css`
@@ -59,7 +59,7 @@ const pieChartCss = css`
   justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  width: 400px;
+  width: 25%;
   height: 400px;
 `;
 
@@ -69,7 +69,7 @@ const barChartCss = css`
   justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  width: 840px;
+  width: 50%;
   height: 400px;
 `;
 
@@ -132,10 +132,39 @@ function AnalysisPanel() {
   ];
 
   // 코인 평균 매도 시간
-  const coinAverageSellTimeData = userAnalysis.data?.coin_avg_sell_time.map((item) => ({
-    coin: item.coin,
-    time: Math.round(item.avg_sell_time),
-  }));
+  const coinAverageSellTimeData = useMemo(() => {
+    if (!userAnalysis.data?.coin_avg_sell_time) return [];
+
+    // 코인 이름을 정규화하는 함수
+    const normalizeCoinName = (coin: string) => {
+      // "BTC/KRW" -> "BTC", "KRW-BTC" -> "BTC" 형태로 변환
+      return coin.replace('KRW-', '').replace('/KRW', '');
+    };
+
+    // 데이터를 정규화된 코인 이름으로 그룹화
+    const groupedData = userAnalysis.data.coin_avg_sell_time.reduce(
+      (acc: { [key: string]: any[] }, item) => {
+        const normalizedName = normalizeCoinName(item.coin);
+        if (!acc[normalizedName]) {
+          acc[normalizedName] = [];
+        }
+        acc[normalizedName].push(item);
+        return acc;
+      },
+      {},
+    );
+
+    // 각 그룹의 평균 시간 계산
+    return Object.entries(groupedData).map(([coin, items]) => {
+      const totalTime = items.reduce((sum, item) => sum + item.avg_sell_time, 0);
+      const avgTime = items.length > 0 ? totalTime / items.length : 0;
+
+      return {
+        coin: items[0].coin, // 원래 형식 중 하나를 사용
+        time: Math.round(avgTime),
+      };
+    });
+  }, [userAnalysis.data?.coin_avg_sell_time]);
 
   // 레버리지 별 평균 잔액 (레버리지 순 정렬)
   const leverageAverageBalanceData = userAnalysis.data?.leverage_avg_balance
@@ -177,9 +206,9 @@ function AnalysisPanel() {
 
     // 코인 정보 초기화
     changeCoinInfo({
-      coin_1: { value: '', label: '' },
-      coin_2: { value: '', label: '' },
-      coin_3: { value: '', label: '' },
+      coin_1: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_2: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_3: { value: '', label: '', sellUp: 0, sellDown: 0 },
     });
 
     // 잔액 초기화

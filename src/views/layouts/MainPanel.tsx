@@ -45,9 +45,9 @@ function MainPanel() {
 
     // 코인 정보 초기화
     changeCoinInfo({
-      coin_1: { value: '', label: '' },
-      coin_2: { value: '', label: '' },
-      coin_3: { value: '', label: '' },
+      coin_1: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_2: { value: '', label: '', sellUp: 0, sellDown: 0 },
+      coin_3: { value: '', label: '', sellUp: 0, sellDown: 0 },
     });
 
     // 잔액 초기화

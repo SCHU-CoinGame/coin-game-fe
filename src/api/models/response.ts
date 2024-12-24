@@ -21,6 +21,8 @@ export interface Deeplearning {
   largest_drop: boolean;
   fastest_decline: boolean;
   least_volatile: boolean;
+  sell_up: number;
+  sell_down: number;
   rank: number;
 }
 

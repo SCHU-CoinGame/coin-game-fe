@@ -6,8 +6,9 @@ interface MyResponsivePieProps {
 
 const MyResponsivePie = ({ data }: MyResponsivePieProps) => (
   <ResponsivePie
+    animate={false}
     data={data}
-    margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+    margin={{ top: 40, right: 90, bottom: 80, left: 90 }}
     innerRadius={0.5}
     padAngle={0.7}
     cornerRadius={3}
