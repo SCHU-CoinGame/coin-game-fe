@@ -113,9 +113,9 @@ function SigninPanel() {
       <Form onFinish={onFinish}>
         <Form.Item<FieldType>
           name="name"
-          rules={[{ required: true, message: '이름을 입력해주세요.' }]}
+          rules={[{ required: true, message: '닉네임을 입력해주세요.' }]}
         >
-          <Input css={inputCss} placeholder="이름" />
+          <Input css={inputCss} placeholder="닉네임" />
         </Form.Item>
         <Form.Item<FieldType>
           name="affiliation"
@@ -130,9 +130,9 @@ function SigninPanel() {
           <Input css={inputCss} placeholder="학번" />
         </Form.Item> */}
         <Form.Item<FieldType> name="nickname">
-          <Input css={inputCss} placeholder="별명" />
+          <Input css={inputCss} placeholder="이메일" />
         </Form.Item>
-        {/* <div>별명 미작성 시, 랭킹에 이름으로 등록됩니다</div> */}
+         <div>이메일은 필수항목이 아니며, 경품 전달을 위해서 사용됩니다</div>
         <div css={btnContainerCss}>
           <Button type="primary" htmlType="submit" css={startBtnCss}>
             게임 시작
