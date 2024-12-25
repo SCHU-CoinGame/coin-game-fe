@@ -130,9 +130,9 @@ function SigninPanel() {
           <Input css={inputCss} placeholder="학번" />
         </Form.Item> */}
         <Form.Item<FieldType> name="nickname">
-          <Input css={inputCss} placeholder="이메일" />
+          <Input css={inputCss} placeholder="이메일(선택항목)" />
         </Form.Item>
-         <div>이메일은 필수항목이 아니며, 경품 전달을 위해서 사용됩니다</div>
+         <div>이메일은 경품 전달을 위해서만 사용됩니다</div>
         <div css={btnContainerCss}>
           <Button type="primary" htmlType="submit" css={startBtnCss}>
             게임 시작
