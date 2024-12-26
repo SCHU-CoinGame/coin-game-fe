@@ -90,11 +90,31 @@ function AnalysisPanel() {
   }
 
   // 코인 선택 비율
-  const coinRatioData = userAnalysis.data?.coin_ratio.map((item) => ({
-    id: item.coin,
-    label: item.coin,
-    value: item.count,
-  }));
+  const coinRatioData = useMemo(() => {
+    if (!userAnalysis.data?.coin_ratio) return [];
+
+    // 코인 이름을 정규화하는 함수
+    const normalizeCoinName = (coin: string) => {
+      return coin.replace('KRW-', '').replace('/KRW', '');
+    };
+
+    // 데이터를 정규화된 코인 이름으로 그룹화
+    const groupedData = userAnalysis.data.coin_ratio.reduce(
+      (acc: { [key: string]: number }, item) => {
+        const normalizedName = normalizeCoinName(item.coin);
+        acc[normalizedName] = (acc[normalizedName] || 0) + item.count;
+        return acc;
+      },
+      {},
+    );
+
+    // 그룹화된 데이터를 원하는 형식으로 변환
+    return Object.entries(groupedData).map(([coin, count]) => ({
+      id: coin,
+      label: coin,
+      value: count,
+    }));
+  }, [userAnalysis.data?.coin_ratio]);
 
   // 레버리지 선택 비율
   const leverageRatioData = userAnalysis.data?.leverage_ratio.map((item) => ({
@@ -160,7 +180,7 @@ function AnalysisPanel() {
       const avgTime = items.length > 0 ? totalTime / items.length : 0;
 
       return {
-        coin: items[0].coin, // 원래 형식 중 하나를 사용
+        coin: items[0].coin,
         time: Math.round(avgTime),
       };
     });
